@@ -1,0 +1,23 @@
+{
+  "schemaVersion":1,"packId":"entlimit-java-basics","name":"Java 入门运行样板","version":"1.0","description":"原创可运行练习，需要用户明确安装并信任 Java 插件，以及本地 JDK 17 或更新版本。不会自动启用。","author":"EntLimit",
+  "topics":[{"id":"java","name":"编程 · Java","description":"Java 方法与字符串练习"}],
+  "exercises":[{
+    "id":"java-count-nonempty-v1","topicId":"java","mode":"standard","kind":"code","languageId":"java","title":"统计真正非空的字符串","estimatedMinutes":5,
+    "scenario":"实现 public static int countNonEmpty(String[] values)，返回数组中长度不为 0 的字符串数量。输入数组长度 0–1000，元素均为非 null 字符串。只排除空字符串，只有空格的字符串也应计数；不能修改数组。使用 public class Solution，保留函数签名，不需要 main 方法。\n\n示例：[\"ready\",\"\",\"ok\"] 返回 2；空数组返回 0。本题需要已明确安装并信任 Java 插件和 JDK，导入本身不会运行代码。",
+    "takeaway":"明确区分空字符串与空白字符串，用一次遍历累计符合条件的元素。","sourceType":"original","sourceLabel":"EntLimit 原创练习，未复制第三方题库","sourceUrl":"",
+    "coding":{
+      "functionName":"countNonEmpty","parameterTypes":["string[]"],"returnType":"int",
+      "starterCode":"public class Solution {\n    public static int countNonEmpty(String[] values) {\n        int count = 0;\n        // 补充你的实现\n        return count;\n    }\n}\n",
+      "referenceCode":"public class Solution {\n    public static int countNonEmpty(String[] values) {\n        int count = 0;\n        for (String value : values) {\n            if (!value.isEmpty()) count++;\n        }\n        return count;\n    }\n}\n",
+      "hints":["逐个检查字符串，遇到长度不为 0 的项时增加计数。","String.isEmpty() 检查长度是否为 0；不要 trim，否则会错误排除只含空格的项。"],
+      "solutionExplanation":"count 从 0 开始，遍历数组并在字符串非空时加 1。返回符合条件的元素数；整个过程不修改输入。","complexity":"设 n 为数组项数，isEmpty 检查长度，单次遍历时间 O(n)，额外空间 O(1)。",
+      "cases":[
+        {"name":"两项非空","argumentsJson":"[[\"ready\",\"\",\"ok\"]]","expectedJson":"2","isExample":true},
+        {"name":"空数组","argumentsJson":"[[]]","expectedJson":"0","isExample":true},
+        {"name":"空白仍是非空","argumentsJson":"[[\" \",\"\",\"  \"]]","expectedJson":"2"},
+        {"name":"全部为空","argumentsJson":"[[\"\",\"\"]]","expectedJson":"0"},
+        {"name":"Unicode 字符","argumentsJson":"[[\"学习\",\"\",\"🙂\"]]","expectedJson":"2"}
+      ]
+    }
+  }]
+}

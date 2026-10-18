@@ -1,0 +1,8 @@
+{
+  "schemaVersion":1,"packId":"entlimit-chinese-reading","name":"语文阅读知识包样板","version":"1.0","description":"两道原创短句阅读练习，不引用第三方试卷或文章。","author":"EntLimit",
+  "topics":[{"id":"chinese","name":"语文 · 阅读表达","description":"从原创短句理解关系与主干"}],
+  "exercises":[
+    {"id":"chinese-cause-effect-v1","topicId":"chinese","mode":"standard","kind":"scenario","title":"找出原因和结果","estimatedMinutes":3,"sourceType":"original","sourceLabel":"EntLimit 原创短句与练习","sourceUrl":"","takeaway":"因果关系说明为什么发生；不能把结果误读为原因，也不能把连接词当作证据本身。","scenario":"阅读原创短句：“因为夜里持续降雨，低洼路段出现积水，所以学校临时调整了校车路线。”这个句子用连接词串起原因和应对。请只依据句中内容回答，不添加未给出的猜测。","parts":[{"id":"cause","kind":"choice","prompt":"句中说明学校临时调整路线的直接原因是什么？","options":["低洼路段出现积水","校车司机想换一条路线","学校决定提前放假"],"correctIndex":0,"hints":["关注调整路线前，句子明确给出的路况。"],"explanation":"句子明确写出积水这一直接路况，其他两项没有证据。"},{"id":"connector","kind":"fill","prompt":"与“因为”呼应、引出结果的连接词是什么？","acceptedAnswers":["所以"],"hints":["看“学校临时调整”前面的两个字。"],"explanation":"因为与所以在这里标示因果关系；仍要依据实际内容判断原因和结果。"}]},
+    {"id":"chinese-sentence-core-v1","topicId":"chinese","mode":"light","kind":"scenario","title":"一句话最核心的信息","estimatedMinutes":2,"sourceType":"original","sourceLabel":"EntLimit 原创短句与练习","sourceUrl":"","takeaway":"先识别谁做什么，再区分时间、地点、方式和修饰信息。","scenario":"阅读原创短句：“午后，小林在图书馆认真地阅读一本介绍海洋的书。”先抓住人物、动作和对象，再识别补充信息。这里不要求删改原句，只练习理解主干。","parts":[{"id":"core","kind":"choice","prompt":"哪项保留了人物、动作和对象这组核心信息？","options":["小林阅读书","午后在图书馆","认真地介绍海洋"],"correctIndex":0,"hints":["谁：小林；做什么：阅读；阅读什么：书。"],"explanation":"小林、阅读、书分别对应人物、动作和对象；其他信息补充时间、地点、方式或书的内容。"},{"id":"place","kind":"fill","prompt":"“在图书馆”补充的是地点还是时间？请填“地点”或“时间”。","acceptedAnswers":["地点"],"hints":["它回答事情在哪里发生。"],"explanation":"在图书馆补充地点；午后补充时间。"}]}
+  ]
+}

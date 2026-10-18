@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>WinExe</OutputType><ApplicationManifest>../../installer/asInvoker.manifest</ApplicationManifest><TargetFramework>net10.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../EntLimit.Core/EntLimit.Core.csproj" /><ProjectReference Include="../EntLimit.Runner/EntLimit.Runner.csproj" /></ItemGroup>
+</Project>

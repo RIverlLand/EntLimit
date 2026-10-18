@@ -1,0 +1,32 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EntLimit.Core/EntLimit.Core.csproj" />
+    <Project Path="src/EntLimit.Online/EntLimit.Online.csproj" />
+    <Project Path="src/EntLimit.JavaPlugin/EntLimit.JavaPlugin.csproj" />
+    <Project Path="src/EntLimit.AdminBroker/EntLimit.AdminBroker.csproj" />
+    <Project Path="src/EntLimit.EmergencyStop/EntLimit.EmergencyStop.csproj" />
+    <Project Path="src/EntLimit.Desktop/EntLimit.Desktop.csproj" />
+    <Project Path="src/EntLimit.Monitor/EntLimit.Monitor.csproj" />
+    <Project Path="src/EntLimit.NativeHost/EntLimit.NativeHost.csproj" />
+    <Project Path="src/EntLimit.Runner/EntLimit.Runner.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EntLimit.Core.Tests/EntLimit.Core.Tests.csproj" />
+    <Project Path="tests/EntLimit.Content.Tests/EntLimit.Content.Tests.csproj" />
+    <Project Path="tests/EntLimit.Online.Tests/EntLimit.Online.Tests.csproj" />
+    <Project Path="tests/EntLimit.Plugin.Tests/EntLimit.Plugin.Tests.csproj" />
+    <Project Path="tests/EntLimit.Distribution.Tests/EntLimit.Distribution.Tests.csproj" />
+    <Project Path="tests/EntLimit.Desktop.Tests/EntLimit.Desktop.Tests.csproj" />
+    <Project Path="tests/EntLimit.Exercise.Tests/EntLimit.Exercise.Tests.csproj" />
+    <Project Path="tests/EntLimit.Analysis.Tests/EntLimit.Analysis.Tests.csproj" />
+    <Project Path="tests/EntLimit.Guard.Tests/EntLimit.Guard.Tests.csproj" />
+    <Project Path="tests/EntLimit.Recovery.Tests/EntLimit.Recovery.Tests.csproj" />
+    <Project Path="tests/EntLimit.Runner.Tests/EntLimit.Runner.Tests.csproj" />
+    <Project Path="tests/EntLimit.Sample.Tests/EntLimit.Sample.Tests.csproj" />
+    <Project Path="tests/EntLimit.Integration.Tests/EntLimit.Integration.Tests.csproj" />
+    <Project Path="tests/EntLimit.Process.Tests/EntLimit.Process.Tests.csproj" />
+    <Project Path="tests/EntLimit.Scan.Tests/EntLimit.Scan.Tests.csproj" />
+    <Project Path="tests/EntLimit.Window.Tests/EntLimit.Window.Tests.csproj" />
+    <Project Path="tests/EntLimit.WindowFixture/EntLimit.WindowFixture.csproj" />
+  </Folder>
+</Solution>

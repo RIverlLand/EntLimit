@@ -1,0 +1,386 @@
+{
+  "schemaVersion": 1,
+  "exercises": [
+    {
+      "id": "network-subnet-gateway-v1",
+      "topicId": "network",
+      "mode": "standard",
+      "kind": "scenario",
+      "title": "同一台交换机，为什么还是到不了？",
+      "estimatedMinutes": 7,
+      "scenario": "你在家搭了一个小网络。电脑是 192.168.10.20/24，默认网关是 192.168.10.1；打印机是 192.168.10.80/24；NAS 是 192.168.20.30/24。三个设备接在同一台普通二层交换机上，没有 VLAN、静态路由或其他特殊配置。假设连线正常，防火墙允许访问。\n\n知识补给：IPv4 地址有 32 位，/24 表示前 24 位属于网络部分，因此这里前三段相同的地址属于同一子网。主机先比较目的地址与自己的子网；同子网时直接寻找对方的链路层地址，不同子网时寻找路由，这里使用默认网关。普通二层交换机负责转发同一链路上的帧，本身不承担 IP 路由。\n\n请站在电脑这一侧，判断接下来该把数据交给谁。",
+      "takeaway": "先用子网掩码判断目的地是否在本地；跨子网需要路由，同一台交换机不等于同一 IP 子网。",
+      "sourceLabel": "EntLimit 原创场景；协议参考 RFC 1122 §3.3.1",
+      "sourceUrl": "https://www.rfc-editor.org/rfc/rfc1122.html#section-3.3.1",
+      "parts": [
+        {
+          "id": "network",
+          "kind": "fill",
+          "prompt": "电脑所在子网的网络地址是什么？只填 IPv4 地址，不需要 /24。",
+          "acceptedAnswers": [
+            "192.168.10.0",
+            "192.168.10.0/24"
+          ],
+          "hints": [
+            "/24 保留前三段，最后一段的主机位全部归零。",
+            "把 192.168.10.20 的最后一段改为 0。"
+          ],
+          "explanation": "192.168.10.20/24 的网络地址是 192.168.10.0，常写作 192.168.10.0/24。"
+        },
+        {
+          "id": "printer",
+          "kind": "choice",
+          "prompt": "电脑第一次向打印机发送 IP 数据包时，应选择哪条路径？",
+          "options": [
+            "交给默认网关，让网关转发给打印机",
+            "在本地链路寻找打印机，经交换机直接发送",
+            "交给 DNS 服务器，让它转发数据"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "先比较电脑与打印机的 /24 网络部分。",
+            "192.168.10.20 和 192.168.10.80 的前三段相同。"
+          ],
+          "explanation": "打印机与电脑同属 192.168.10.0/24，不需要默认网关转发；IPv4 以 ARP 等机制确定本地下一跳的链路层地址。"
+        },
+        {
+          "id": "nas",
+          "kind": "choice",
+          "prompt": "电脑向 NAS 的 192.168.20.30 发起访问。根据现有信息，哪个结论最准确？",
+          "options": [
+            "都接在同一交换机上，所以电脑必然直接访问成功",
+            "电脑会尝试交给 192.168.10.1；能否成功还取决于网关路由和返回路径",
+            "将电脑 DNS 改为 NAS 地址就一定能连通"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "NAS 的网络部分是 192.168.20，和电脑不同。",
+            "默认网关是下一跳，并不保证它知道如何到达目的网络。"
+          ],
+          "explanation": "目的地址不在本地 /24 子网，电脑使用默认网关。还需要网关有可用的转发路径，以及 NAS 能返回数据；仅接同一交换机不能证明这些条件成立。"
+        }
+      ]
+    },
+    {
+      "id": "network-dns-incident-v1",
+      "topicId": "network",
+      "mode": "light",
+      "kind": "scenario",
+      "title": "网页打不开，先查哪一步？",
+      "estimatedMinutes": 2,
+      "scenario": "你正在排查一个内部网站。浏览器打开 portal.example.test 时提示“找不到服务器地址”；查询这个域名时，当前配置的 DNS 服务器一直超时。管理员提供了站点的 IP 地址，用这个地址测试目标 TCP 端口可以连通。\n\n知识补给：DNS 帮助应用把域名解析为地址，之后才会尝试连接目标服务。端口可连接说明这条 IP 连接路径可用，但不等于网页内容、证书和 HTTP 服务都正常。域名解析失败也不一定代表 DNS 服务器本身坏了，客户端设置或到 DNS 的路径也可能有问题。",
+      "takeaway": "把域名解析与 IP 连接分开排查；看到证据后缩小范围，不把一个测试结果当作所有层都正常。",
+      "sourceLabel": "EntLimit 原创场景；概念参考 RFC 1034 §3",
+      "sourceUrl": "https://www.rfc-editor.org/rfc/rfc1034.html#section-3",
+      "parts": [
+        {
+          "id": "service",
+          "kind": "fill",
+          "prompt": "把域名查询为地址的系统通常简称什么？填写三个英文字母。",
+          "acceptedAnswers": [
+            "DNS"
+          ],
+          "hints": [
+            "它的全称是 Domain Name System。",
+            "取 Domain、Name、System 三个词的首字母。"
+          ],
+          "explanation": "DNS（域名系统）提供名称查询机制，应用可借此获取域名对应的地址记录。"
+        },
+        {
+          "id": "next-step",
+          "kind": "choice",
+          "prompt": "下一步最有针对性的排查是什么？",
+          "options": [
+            "马上重装浏览器，因为端口连通就代表网络完全正常",
+            "检查客户端 DNS 配置、DNS 查询结果以及到 DNS 服务器的连通性",
+            "随便更换网站 IP，直到网页能打开"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "现在直接失败的是域名查询，不是已测试的站点 TCP 连接。",
+            "先查失败的环节，也别仅凭超时认定 DNS 服务器坏了。"
+          ],
+          "explanation": "已有证据指向名称解析环节，应先检查配置与查询路径。即使修复 DNS，也仍需验证网页服务；IP 端口连通不能证明所有层都正常。"
+        }
+      ]
+    },
+    {
+      "id": "python-stable-dedupe-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "日志去重，保留第一次出现",
+      "estimatedMinutes": 7,
+      "scenario": "一个采集程序会重复上报事件 ID。请实现 stable_unique(items)，返回去重后的新列表，保留每个字符串第一次出现的顺序，不能修改输入列表。\n\n输入：items 是只含字符串的列表，长度 0–10000；区分大小写，空字符串也是合法 ID。\n输出：只含字符串的新列表。\n\n示例：['boot', 'login', 'boot', 'logout', 'login'] → ['boot', 'login', 'logout']。\n请不要排序：采集顺序有意义。尝试让算法平均耗时与输入长度成正比。你可以运行示例，再提交全部检查。",
+      "takeaway": "用集合记录已见元素，用列表保留首次出现顺序；把查重与输出顺序分开管理。",
+      "sourceLabel": "EntLimit 原创编程练习；语言参考 Python 内置类型文档",
+      "sourceUrl": "https://docs.python.org/3/library/stdtypes.html#types-set",
+      "coding": {
+        "functionName": "stable_unique",
+        "starterCode": "def stable_unique(items):\n    # 返回保留首次出现顺序的新列表，不要修改 items\n    result = []\n    # 在这里完成你的实现\n    return result\n",
+        "referenceCode": "def stable_unique(items):\n    seen = set()\n    result = []\n    for item in items:\n        if item not in seen:\n            seen.add(item)\n            result.append(item)\n    return result\n",
+        "hints": [
+          "先想两个职责：判断是否见过，以及按顺序收集结果。",
+          "集合适合判断成员是否出现过，结果列表只在首次见到时追加。",
+          "依次遍历 items；遇到不在 seen 的字符串时，加入 seen 和 result。"
+        ],
+        "cases": [
+          {
+            "name": "重复日志",
+            "argumentsJson": "[[\"boot\",\"login\",\"boot\",\"logout\",\"login\"]]",
+            "expectedJson": "[\"boot\",\"login\",\"logout\"]",
+            "isExample": true
+          },
+          {
+            "name": "空输入",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": true
+          },
+          {
+            "name": "不能按字母排序",
+            "argumentsJson": "[[\"z\",\"b\",\"a\",\"z\",\"b\"]]",
+            "expectedJson": "[\"z\",\"b\",\"a\"]"
+          },
+          {
+            "name": "大小写与空字符串",
+            "argumentsJson": "[[\"\",\"DNS\",\"dns\",\"\",\"DNS\"]]",
+            "expectedJson": "[\"\",\"DNS\",\"dns\"]"
+          },
+          {
+            "name": "全部重复",
+            "argumentsJson": "[[\"x\",\"x\",\"x\"]]",
+            "expectedJson": "[\"x\"]"
+          },
+          {
+            "name": "保留有意义的空格",
+            "argumentsJson": "[[\" a\",\"a\",\"a \",\" a\"]]",
+            "expectedJson": "[\" a\",\"a\",\"a \"]"
+          }
+        ],
+        "solutionExplanation": "1. 直接用列表查重也能答对，但每次执行 item not in result 都可能从头扫描；全部不同时，比较次数会累积到 1 + 2 + … + (n−1)。\n\n2. 把职责拆开：seen 集合只负责“见过没有”，result 列表负责保留首次出现的顺序。遍历输入时，只有第一次遇到的字符串才同时加入两者。\n\n3. 循环每处理完一个元素，result 就恰好包含目前为止的去重结果，seen 则包含同一批元素。这解释了为什么不丢失首次出现顺序，也不需要排序或修改输入。\n\n这是一种便于推导、适合本题字符串输入的实现；并不意味着所有输入类型、内存限制和工程环境下它都绝对最优。",
+        "complexity": "设 n 为输入项数，k 为不同字符串的数量。按常见的哈希表平均成本、把字符串键操作视为常数时：时间平均 O(n)，额外空间 O(k)；结果列表本身也占 O(k)。集合和列表保存的是已有字符串的引用，不会复制每个字符串的字符内容。\n\n字符串长度不能总被忽略：首次计算一个长度 L 的字符串哈希通常要 O(L)，相等比较也可能检查字符。若 S 为输入中所有字符串长度之和，在通常的哈希分布下，可用平均 O(n + S) 表达包含这些字符处理的成本。CPython 会缓存字符串对象的哈希，具体常数取决于对象是否复用。大量哈希冲突可能使表现退化，因此这里的 O(n) 是平均分析，不是无条件最坏时间保证。",
+        "alternativeCode": "def stable_unique(items):\n    return list(dict.fromkeys(items))\n",
+        "alternativeExplanation": "Python 3.7+ 的字典保证插入顺序；dict.fromkeys(items) 为每个不同字符串创建一个键，重复键不会改变首次插入位置，再把键转为列表即可。本应用要求 Python 3.8+，可使用这种写法。\n\n它同样依赖可哈希键，平均时间与空间量级不变（同样要考虑字符串长度与哈希碰撞），主要优势是简洁；seen + result 版本则更容易插入过滤、统计等业务逻辑。只用 list(set(items)) 不能保证题目要求的首次出现顺序。"
+      }
+    },
+    {
+      "id": "python-status-count-v1",
+      "topicId": "python",
+      "mode": "light",
+      "kind": "code",
+      "title": "修好一个状态计数器",
+      "estimatedMinutes": 3,
+      "scenario": "服务监控需要汇总每种状态出现的次数。下面的函数想用字典累计计数，但第一次遇到某个状态时就会抛 KeyError。请修好 count_statuses(statuses)。\n\n输入：statuses 为字符串列表，长度 0–10000。保留原字符串，不做大小写或空格转换；空字符串也需要计数。\n输出：字典，键是状态，值是出现次数。不要修改输入。\n\n示例：['ok', 'fail', 'ok'] → {'ok': 2, 'fail': 1}；空列表 → {}。\n提示：字典里还没有这个键时，你希望它的初始计数是多少？",
+      "takeaway": "累计字典计数时，为首次出现的键提供默认值；空输入也是正常情况。",
+      "sourceLabel": "EntLimit 原创修复练习；语言参考 Python dict.get",
+      "sourceUrl": "https://docs.python.org/3/library/stdtypes.html#dict.get",
+      "coding": {
+        "functionName": "count_statuses",
+        "starterCode": "def count_statuses(statuses):\n    counts = {}\n    for status in statuses:\n        counts[status] += 1  # 第一次遇到这个键时会怎样？\n    return counts\n",
+        "referenceCode": "def count_statuses(statuses):\n    counts = {}\n    for status in statuses:\n        counts[status] = counts.get(status, 0) + 1\n    return counts\n",
+        "hints": [
+          "键第一次出现时，counts[status] 不存在。计数应该从 0 开始。",
+          "可以先判断键是否存在，也可以使用 counts.get(status, 0)。",
+          "把累加语句改成：counts[status] = counts.get(status, 0) + 1。"
+        ],
+        "cases": [
+          {
+            "name": "两种状态",
+            "argumentsJson": "[[\"ok\",\"fail\",\"ok\"]]",
+            "expectedJson": "{\"ok\":2,\"fail\":1}",
+            "isExample": true
+          },
+          {
+            "name": "空输入",
+            "argumentsJson": "[[]]",
+            "expectedJson": "{}",
+            "isExample": true
+          },
+          {
+            "name": "大小写不合并",
+            "argumentsJson": "[[\"OK\",\"ok\",\"OK\"]]",
+            "expectedJson": "{\"OK\":2,\"ok\":1}"
+          },
+          {
+            "name": "空状态也计数",
+            "argumentsJson": "[[\"\",\"ok\",\"\"]]",
+            "expectedJson": "{\"\":2,\"ok\":1}"
+          },
+          {
+            "name": "连续重复",
+            "argumentsJson": "[[\"pending\",\"pending\",\"pending\",\"pending\"]]",
+            "expectedJson": "{\"pending\":4}"
+          }
+        ],
+        "solutionExplanation": "1. 原代码的 += 会先读取 counts[status]；第一次遇到一个键时，该键尚不存在，因此抛出 KeyError。\n\n2. 用 counts.get(status, 0) 表达统一规则：“已经出现过就取当前次数，否则从 0 开始”，再加 1 写回。空输入没有任何循环，自然返回空字典。\n\n3. 每处理完一个状态，字典就准确记录已处理前缀中各状态的次数。无需对每个键反复调用 statuses.count；单次遍历同时完成所有计数。\n\n保留原字符串：大小写、空字符串和空格都可能有业务含义，不应为了计数擅自归一化。这是适合当前需求的参考实现，不是所有场景下唯一或绝对最优的写法。",
+        "complexity": "设 n 为输入项数，k 为不同状态的数量。哈希表查找/写入按平均常数成本计时，单次遍历平均 O(n)，返回的字典占 O(k) 空间；除返回字典外只使用常数个局部变量。如果为每个不同状态重新扫描整个列表计数，通常需要 O(nk) 次项比较。\n\n对于字符串键，长度也有成本：首次计算长度 L 的字符串哈希通常为 O(L)，相等比较可能检查字符。若 S 是所有输入字符串长度之和，通常哈希分布下可按平均 O(n + S) 分析包含字符处理的时间。CPython 的字符串哈希缓存可以减少重复计算；严重哈希碰撞仍可能退化，所以不能将平均 O(n) 当作严格最坏情况承诺。空间 O(k) 计的是字典项与引用，不重复复制输入字符串的字符内容。",
+        "alternativeCode": "from collections import Counter\n\ndef count_statuses(statuses):\n    return dict(Counter(statuses))\n",
+        "alternativeExplanation": "Counter 是标准库中专门用于计数的字典子类，用于表达“统计每个元素出现几次”。这里转成普通 dict，直接满足题目返回形式。它同样平均 O(n)（字符串字符成本另计），额外空间 O(k)；Counter 临时对象与新字典同时存在时会增加常数级内存开销，但不改变空间量级。\n\n短小的 get 循环适合学习默认值与累计逻辑；Counter 更直接传达计数意图。两者都不修改输入，也无需安装第三方包。"
+      }
+    },
+    {
+      "id": "network-subnet-gateway-v1-review",
+      "reviewOfId": "network-subnet-gateway-v1",
+      "topicId": "network",
+      "mode": "light",
+      "kind": "scenario",
+      "title": "快速回顾：数据先交给谁？",
+      "estimatedMinutes": 2,
+      "scenario": "回顾你做过的家庭网络场景：电脑是 192.168.10.20/24，打印机是 192.168.10.80/24，NAS 是 192.168.20.30/24，默认网关为 192.168.10.1。设备接同一台普通二层交换机，没有特殊路由配置。先判断目标是否同子网，再选择下一跳。",
+      "takeaway": "同子网直接寻找目标；跨子网寻找路由，接同一交换机不代表 IP 子网相同。",
+      "sourceLabel": "EntLimit 原创复习；协议参考 RFC 1122 §3.3.1",
+      "sourceUrl": "https://www.rfc-editor.org/rfc/rfc1122.html#section-3.3.1",
+      "parts": [
+        {
+          "id": "next-hop",
+          "kind": "choice",
+          "prompt": "电脑访问 NAS 时，在这个场景中首先选择哪个 IP 下一跳？",
+          "options": [
+            "192.168.10.1 默认网关",
+            "192.168.10.80 打印机",
+            "不需要下一跳，交换机必然会跨子网路由"
+          ],
+          "correctIndex": 0,
+          "hints": [
+            "比较电脑与 NAS 的 /24 网络部分。",
+            "目标不在本地子网时，使用已有路由；此处只有默认网关。"
+          ],
+          "explanation": "NAS 不在电脑的 192.168.10.0/24 子网，电脑将包交给默认网关。能否最终到达，还需网关的转发路径与返回路径有效。"
+        },
+        {
+          "id": "network",
+          "kind": "fill",
+          "prompt": "电脑所在的网络地址是？填写 IPv4 地址，可带 /24。",
+          "acceptedAnswers": [
+            "192.168.10.0",
+            "192.168.10.0/24"
+          ],
+          "hints": [
+            "/24 保留前三段，主机位归零。"
+          ],
+          "explanation": "192.168.10.20/24 对应网络地址 192.168.10.0。"
+        }
+      ]
+    },
+    {
+      "id": "network-dns-incident-v1-review",
+      "reviewOfId": "network-dns-incident-v1",
+      "topicId": "network",
+      "mode": "light",
+      "kind": "scenario",
+      "title": "快速回顾：DNS 超时说明什么？",
+      "estimatedMinutes": 1,
+      "scenario": "再次遇到类似故障：域名查询超时，但用管理员提供的站点 IP 测试目标 TCP 端口可以连通。这次不需要重做整组排查，先回忆这两个测试分别覆盖哪个环节。",
+      "takeaway": "名称解析与 IP 连接分开排查；端口连通不能证明域名解析和网页服务都正常。",
+      "sourceLabel": "EntLimit 原创复习；概念参考 RFC 1034 §3",
+      "sourceUrl": "https://www.rfc-editor.org/rfc/rfc1034.html#section-3",
+      "parts": [
+        {
+          "id": "diagnosis",
+          "kind": "choice",
+          "prompt": "根据现有证据，哪个结论最准确？",
+          "options": [
+            "TCP 端口连通说明 DNS 一定正常",
+            "应先排查 DNS 配置与查询路径；端口连通并不保证网页服务正常",
+            "DNS 超时证明站点服务器已经关机"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "名称查询与目标端口连接是两个不同测试。",
+            "查询超时也可能发生在客户端配置或到 DNS 的路径上。"
+          ],
+          "explanation": "已有证据把问题指向名称查询环节，应先检查 DNS 配置和查询路径。站点 IP 端口连通只覆盖该连接测试，不代表证书、HTTP 或域名解析都正常。"
+        }
+      ]
+    },
+    {
+      "id": "python-stable-dedupe-v1-review",
+      "reviewOfId": "python-stable-dedupe-v1",
+      "topicId": "python",
+      "mode": "light",
+      "kind": "scenario",
+      "title": "快速回顾：去重为何保留顺序？",
+      "estimatedMinutes": 2,
+      "scenario": "回顾你已经通过的 stable_unique：依次遍历字符串，把已见元素放进 seen 集合，只在第一次见到时追加到 result 列表。这次用两问回忆思路，不需要重新写函数。",
+      "takeaway": "集合用于成员判断，列表保留首次顺序；哈希查找的平均成本和最坏情况要分开。",
+      "sourceLabel": "EntLimit 原创复习；语言参考 Python 集合类型",
+      "sourceUrl": "https://docs.python.org/3/library/stdtypes.html#types-set",
+      "parts": [
+        {
+          "id": "order",
+          "kind": "choice",
+          "prompt": "为什么用 result 列表收集首次出现项，而不是直接返回 list(set(items))？",
+          "options": [
+            "集合保证按输入顺序输出，所以两者总是等价",
+            "列表只在首次见到时追加，明确保留输入的首次出现顺序",
+            "列表查重永远比集合快"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "本题把查重和输出顺序分开管理。",
+            "set 不承诺按输入首次出现顺序迭代。"
+          ],
+          "explanation": "seen 负责成员查询，result 按扫描顺序仅收集第一次见到的项；直接把 set 转列表不能保证题目要求的顺序。"
+        },
+        {
+          "id": "cost",
+          "kind": "choice",
+          "prompt": "假设每项哈希与比较平均成本按常数计，n 项、k 种不同字符串，这个方案通常是什么复杂度？",
+          "options": [
+            "平均时间 O(n)，存储项与引用的空间 O(k)",
+            "严格最坏时间总为 O(1)，空间 O(1)",
+            "必须排序，所以时间总是 O(n log n)"
+          ],
+          "correctIndex": 0,
+          "hints": [
+            "单次遍历，每项做集合查询；seen 和结果至多保存 k 个不同项。",
+            "这是平均哈希成本分析；长字符串和严重碰撞需要另外考虑。"
+          ],
+          "explanation": "按通常平均常数哈希操作分析，遍历 n 项是 O(n)，保存 k 种不同项与其引用占 O(k)。字符串长度影响哈希/比较，严重碰撞也可能退化；平均界不等于严格最坏界。"
+        }
+      ]
+    },
+    {
+      "id": "python-status-count-v1-review",
+      "reviewOfId": "python-status-count-v1",
+      "topicId": "python",
+      "mode": "light",
+      "kind": "scenario",
+      "title": "快速回顾：计数器首次出现的键",
+      "estimatedMinutes": 1,
+      "scenario": "回顾你修好的状态计数器：counts = {}，循环中用 counts[status] = counts.get(status, 0) + 1 累计次数。某个新状态第一次出现时，字典里还没有它的键。",
+      "takeaway": "dict.get 的默认值处理首次出现；计数需要把新值写回字典。",
+      "sourceLabel": "EntLimit 原创复习；语言参考 Python dict.get",
+      "sourceUrl": "https://docs.python.org/3/library/stdtypes.html#dict.get",
+      "parts": [
+        {
+          "id": "default",
+          "kind": "fill",
+          "prompt": "键不存在时，counts.get(status, 0) 返回多少？填写数字。",
+          "acceptedAnswers": [
+            "0"
+          ],
+          "hints": [
+            "get 的第二个参数是在缺少键时使用的默认值。"
+          ],
+          "explanation": "这里的默认值是 0，后续加 1 才得到首次出现的计数 1。"
+        },
+        {
+          "id": "write-back",
+          "kind": "choice",
+          "prompt": "只调用 counts.get(status, 0)，会自动把这个键和值 0 写进 counts 吗？",
+          "options": [
+            "会，get 总会创建缺失键",
+            "不会；get 返回值，赋值语句才把累计结果写回字典"
+          ],
+          "correctIndex": 1,
+          "hints": [
+            "区分读取返回值与修改字典这两件事。"
+          ],
+          "explanation": "dict.get 不会因键缺失而插入默认值；counts[status] = ... 才会创建或更新这个键。"
+        }
+      ]
+    }
+  ]
+}

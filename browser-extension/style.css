@@ -1,0 +1,8 @@
+:root { color-scheme: light; font-family: system-ui, sans-serif; color: #233932; background: #f4f5ef; }
+body { margin: 0; padding: 24px; }
+main { max-width: 620px; margin: 14vh auto; background: white; border: 1px solid #dce3d9; border-radius: 20px; padding: 36px; }
+h1 { font-size: 25px; font-weight: 650; }
+p { line-height: 1.7; }
+button { background: #285e4c; color: white; padding: 10px 16px; border: 0; border-radius: 8px; cursor: pointer; margin: 4px 4px 4px 0; }
+.note { color: #68796c; font-size: 12px; }
+.popup { width: 330px; }

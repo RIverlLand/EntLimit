@@ -1,0 +1,12 @@
+{
+  "ProtocolVersion": 1,
+  "Id": "example-language",
+  "Name": "Reviewed external language runner",
+  "LanguageId": "example",
+  "Executable": "ExampleRunner.exe",
+  "Files": {
+    "ExampleRunner.exe": "REPLACE_WITH_THE_ACTUAL_64_CHARACTER_SHA256_HASH_OF_THIS_FILE",
+    "ExampleRunner.dll": "REPLACE_WITH_THE_ACTUAL_64_CHARACTER_SHA256_HASH_OF_THIS_FILE",
+    "ExampleRunner.runtimeconfig.json": "REPLACE_WITH_THE_ACTUAL_64_CHARACTER_SHA256_HASH_OF_THIS_FILE"
+  }
+}

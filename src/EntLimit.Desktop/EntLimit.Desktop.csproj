@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>../../installer/asInvoker.manifest</ApplicationManifest>
+    <AssemblyName>EntLimit.Desktop</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup><ProjectReference Include="../EntLimit.Core/EntLimit.Core.csproj" /><ProjectReference Include="../EntLimit.Online/EntLimit.Online.csproj" /></ItemGroup>
+</Project>
