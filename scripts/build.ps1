@@ -50,6 +50,7 @@ $javaDestination = Join-Path $destination 'plugins/java'
 & $DotnetPath publish -m:1 'src/EntLimit.JavaPlugin/EntLimit.JavaPlugin.csproj' -c Release -r win-x64 --self-contained true -o $javaDestination --configfile (Join-Path $repo 'Publish.NuGet.Config') -p:NuGetAudit=false
 if ($LASTEXITCODE -ne 0) { throw 'Java plugin publish failed' }
 & (Join-Path $repo 'scripts/package-java-plugin.ps1') -AppDirectory $destination
+& (Join-Path $repo 'scripts/copy-runtime-notices.ps1') -AppDirectory $destination -DotnetPath $DotnetPath
 & $DotnetPath build -m:1 'tests/EntLimit.Plugin.Tests/EntLimit.Plugin.Tests.csproj' -c Release --configfile (Join-Path $repo 'NuGet.Config')
 if ($LASTEXITCODE -ne 0) { throw 'Plugin test build failed' }
 if ($env:ENT_LIMIT_TEST_JDK) {
@@ -58,6 +59,7 @@ if ($env:ENT_LIMIT_TEST_JDK) {
 } else { Write-Host 'Java runtime checks skipped: set ENT_LIMIT_TEST_JDK to an existing JDK directory.' }
 Copy-Item -LiteralPath (Join-Path $repo 'scripts/emergency-stop.ps1') -Destination $destination
 Copy-Item -LiteralPath (Join-Path $repo 'scripts/EmergencyStop.cmd') -Destination $destination
+Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination $destination
 $desktopTest = Join-Path $repo 'work/desktop-test-published'
 & $DotnetPath publish -m:1 'tests/EntLimit.Desktop.Tests/EntLimit.Desktop.Tests.csproj' -c Release -r win-x64 --self-contained true -o $desktopTest --configfile (Join-Path $repo 'Publish.NuGet.Config') -p:NuGetAudit=false
 if ($LASTEXITCODE -ne 0) { throw 'Desktop check publish failed' }

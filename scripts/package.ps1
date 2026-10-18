@@ -59,9 +59,11 @@ if ($LASTEXITCODE -ne 0) { throw 'Java plugin publish failed' }
 # Plugin publishing helper generates hashes from THIS clean build, not local trust/config files.
 & (Join-Path $repo 'scripts/package-java-plugin.ps1') -AppDirectory $payload
 if ($LASTEXITCODE -ne 0) { throw 'Java plugin manifest failed' }
+& (Join-Path $repo 'scripts/copy-runtime-notices.ps1') -AppDirectory $payload -DotnetPath $DotnetPath
 Copy-Item -LiteralPath (Join-Path $repo 'installer/installed.flag') -Destination $payload
 Copy-Item -LiteralPath (Join-Path $repo 'scripts/emergency-stop.ps1'),(Join-Path $repo 'scripts/EmergencyStop.cmd') -Destination $payload
 Copy-Item -LiteralPath (Join-Path $repo 'README.md') -Destination $payload
+Copy-Item -LiteralPath (Join-Path $repo 'LICENSE') -Destination $payload
 Copy-Item -LiteralPath (Join-Path $repo 'browser-extension') -Destination (Join-Path $payload 'browser-extension') -Recurse
 $documentation=Join-Path $payload 'docs'
 New-Item -ItemType Directory -Path $documentation | Out-Null
