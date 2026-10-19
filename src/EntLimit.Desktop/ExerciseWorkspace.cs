@@ -255,7 +255,7 @@ public partial class MainWindow
         if (RuntimeLabel is null) return;
         bool java = _exercise?.LanguageId == "java";
         RuntimeLabel.Text = java ? "Java JDK · " + (_preferences.JavaPath ?? "未选择；请到 API 与扩展页设置已安装 JDK")
-            : string.IsNullOrWhiteSpace(_preferences.PythonPath) ? "未找到 Python。请选择已有 Python 3；不自动下载。" : "Python · " + _preferences.PythonPath;
+            : string.IsNullOrWhiteSpace(_preferences.PythonPath) ? "未找到 Python。请安装 Python 3.8+ 或选择 python.exe；应用会自动检查 PATH。" : "Python · " + _preferences.PythonPath;
     }
     private void SelectPython_Click(object sender, RoutedEventArgs e)
     {

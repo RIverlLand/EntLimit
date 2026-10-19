@@ -97,7 +97,7 @@ EntLimit 是 Windows 上的学习与娱乐陪伴工具。市面上有的软件�
 
 没有 API 也能完成内置题、离线判题和本地分析。在线分析会发送当前题目与代码；生成题包是待审核的模型草稿，不代表已经联网检索或验证来源。也可导出提示词，与自己的 AI 对话后导入 JSON；导入前预览答案、用例和去重结果。
 
-详见 [在线配置](docs/ONLINE.md)、[题包格式与导入](docs/CONTENT-PACKS.md)、[代码分析](docs/CODE-ANALYSIS.md)。
+详见 [在线配置](docs/ONLINE.md)、[题包格式与导入](docs/CONTENT-PACKS.md)、[代码分析](docs/CODE-ANALYSIS.md)。所有本机配置文件（`config.json`、界面偏好、API、题包、插件、注册表项）的字段、默认值、边界和编辑步骤见 [配置说明](docs/CONFIGURATION.md)。
 
 ## 实现原理
 

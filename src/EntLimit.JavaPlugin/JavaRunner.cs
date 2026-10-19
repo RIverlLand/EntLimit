@@ -20,7 +20,10 @@ public static class JavaRunner
         if (!File.Exists(javac) || !File.Exists(java)) return Fail("runtime_missing", "选定目录不是完整 JDK；需要同时包含 javac.exe 与 java.exe。");
         var cases = coding.Cases.Where(c => !request.ExamplesOnly || c.IsExample).ToList();
         if (cases.Count is < 1 or > 128) return Fail("invalid", "没有可用测试用例或用例过多。");
-        var folder = Path.Combine(Path.GetTempPath(), "EntLimit-java-" + Guid.NewGuid().ToString("N"));
+        string folder;
+        try { folder = RunnerTemp.CreateDirectory("EntLimit-java-"); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        { return Fail("error", "无法创建 Java 运行目录，请检查数据目录或临时目录的写入权限。"); }
         try
         {
             Directory.CreateDirectory(folder);

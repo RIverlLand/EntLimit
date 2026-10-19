@@ -118,7 +118,12 @@ public partial class MainWindow : Window
         if (!response.Ok) throw new InvalidOperationException(response.Error ?? "操作未完成。");
         _snapshot = response;
         UpdateTopicChoices(response); UpdateExtensionList(response);
-        if (string.IsNullOrEmpty(_preferences.PythonPath) && !string.IsNullOrEmpty(response.PythonPath)) { _preferences.PythonPath = response.PythonPath; UpdateRuntimeLabel(); }
+        if (!string.IsNullOrEmpty(response.PythonPath)
+            && (string.IsNullOrEmpty(_preferences.PythonPath) || !File.Exists(_preferences.PythonPath)))
+        {
+            _preferences.PythonPath = response.PythonPath;
+            UpdateRuntimeLabel();
+        }
         RenderStatus(response);
         return response;
     }

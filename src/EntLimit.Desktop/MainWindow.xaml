@@ -56,6 +56,16 @@
       </TabItem>
       <TabItem Header="规则与网站">
         <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
+          <Border Background="#70F6F9FD" BorderBrush="#B8D3F2" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,0,0,16">
+            <DockPanel>
+              <Button DockPanel.Dock="Right" Content="保存规则与域名" Click="SaveRules_Click" Style="{StaticResource PrimaryButton}" VerticalAlignment="Top" Margin="16,0,0,0" ToolTip="保存时长、提醒、开关、域名和其他规则"/>
+              <StackPanel>
+                <TextBlock Text="管控总开关" FontSize="18" FontWeight="SemiBold"/>
+                <CheckBox x:Name="MonitoringBox" Content="启用应用与网站管控" Margin="0,8,0,0"/>
+                <TextBlock Text="关闭后不进行窗口管控，也不会发放新的娱乐许可；学习记录与已有许可保留。修改下方其他规则后也点右侧保存。" TextWrapping="Wrap" Foreground="#657C78" Margin="0,6,0,0"/>
+              </StackPanel>
+            </DockPanel>
+          </Border>
           <TextBlock Text="第一条规则：学习后解锁，结束时温和收尾" FontSize="21" TextWrapping="Wrap"/>
           <TextBlock Text="设置对下一次学习许可生效；已经获得的许可不会缩短。第一版统一管控，不区分工作日与休假。" TextWrapping="Wrap" Foreground="#657C78" Margin="0,10,0,16"/>
           <WrapPanel><TextBlock Text="解锁分钟（至少 90）" VerticalAlignment="Center"/><TextBox x:Name="MinutesBox" Width="90"/><TextBlock Text="提前提醒分钟" VerticalAlignment="Center"/><TextBox x:Name="WarningBox" Width="90"/></WrapPanel>
@@ -64,7 +74,6 @@
           <TextBlock Text="浮层默认关闭。独占全屏可能看不到浮层；默认只发声音并更新托盘，不调用 Windows 通知、不打开学习窗口。" TextWrapping="Wrap" Foreground="#657C78" Margin="0,0,0,12"/>
           <Button Content="启动管理员窗口协助（安装版）" Click="StartAdminBroker_Click" HorizontalAlignment="Left" ToolTip="会显示 Windows UAC；仅协助高权限窗口。本次最多 8 小时，后台断连会退出，之后需手动重新授权。练习保持普通用户权限。"/>
           <TextBlock Text="自用守护" FontSize="18" Margin="0,8,0,4"/>
-          <CheckBox x:Name="MonitoringBox" Content="启用应用与网站管控" Margin="0,8"/>
           <CheckBox x:Name="StartupBox" Content="登录 Windows 后自动启动轻量监控，不打开主界面" Margin="0,8"/>
           <CheckBox x:Name="GuardBox" Content="开启守护：监控被结束后恢复，普通退出需要走调试入口" Margin="0,8"/>
           <TextBlock Text="守护用于抵抗随手关闭的冲动。当前为同用户轻量守护，可以手动停用；家长密码和系统服务尚未启用。勾选后点击保存生效。" TextWrapping="Wrap" Foreground="#657C78" Margin="0,0,0,14"/>

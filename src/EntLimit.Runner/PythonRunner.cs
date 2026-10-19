@@ -13,9 +13,53 @@ public static class PythonRunner
     private const int OutputLimit = 16 * 1024;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
+    /// <summary>Runtime locations reserved for a downloaded/plugin-provided Python.</summary>
+    public static class PythonRuntime
+    {
+        public static string? ManagedDirectory
+        {
+            get
+            {
+                var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                return string.IsNullOrWhiteSpace(local) ? null : Path.Combine(local, "EntLimit", "runtime", "python");
+            }
+        }
+        public static string PortableDirectory => Path.Combine(AppContext.BaseDirectory, "runtime", "python");
+        public static string? ManagedExecutable => ManagedDirectory is { } directory ? Path.Combine(directory, "python.exe") : null;
+    }
+
+    /// <summary>An explicit selection stays authoritative; discovery is only used when nothing is selected.</summary>
+    public static string? ResolvePython(string? configured)
+    {
+        if (!string.IsNullOrWhiteSpace(configured)) return IsUsablePython(configured) ? configured : null;
+        return DiscoverPython();
+    }
+
     public static string? DiscoverPython()
     {
-        var candidates = new List<string> { Path.Combine(AppContext.BaseDirectory, "runtime", "python", "python.exe") };
+        var candidates = new List<string>();
+        void Add(string? path)
+        {
+            if (!string.IsNullOrWhiteSpace(path)) candidates.Add(path);
+        }
+
+        // A python.exe already on PATH is the most predictable choice for the user.
+        foreach (var folder in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
+        {
+            if (string.IsNullOrWhiteSpace(folder)) continue;
+            try
+            {
+                var clean = folder.Trim('"');
+                Add(Path.Combine(clean, OperatingSystem.IsWindows() ? "python.exe" : "python3"));
+                if (OperatingSystem.IsWindows()) Add(Path.Combine(clean, "python3.exe"));
+            }
+            catch (ArgumentException) { }
+        }
+
+        // Managed runtimes: a future runtime plugin can place Python here and it is picked up automatically.
+        Add(PythonRuntime.ManagedExecutable);
+        Add(Path.Combine(PythonRuntime.PortableDirectory, "python.exe"));
+
         if (OperatingSystem.IsWindows())
         {
             foreach (var hive in new[] { RegistryHive.CurrentUser, RegistryHive.LocalMachine })
@@ -27,8 +71,8 @@ public static class PythonRunner
                     foreach (var version in root?.GetSubKeyNames() ?? [])
                     {
                         using var key = root?.OpenSubKey(version + @"\InstallPath");
-                        if (key?.GetValue("ExecutablePath") is string executable) candidates.Add(executable);
-                        if (key?.GetValue("") is string directory) candidates.Add(Path.Combine(directory, "python.exe"));
+                        if (key?.GetValue("ExecutablePath") is string executable) Add(executable);
+                        if (key?.GetValue("") is string directory) Add(Path.Combine(directory, "python.exe"));
                     }
                 }
                 catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
@@ -37,17 +81,16 @@ public static class PythonRunner
             {
                 var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs", "Python");
                 if (Directory.Exists(folder))
-                    candidates.AddRange(Directory.EnumerateDirectories(folder).Take(20).Select(d => Path.Combine(d, "python.exe")));
+                    foreach (var directory in Directory.EnumerateDirectories(folder).Take(20))
+                        Add(Path.Combine(directory, "python.exe"));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
-        foreach (var folder in (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator))
-            if (!string.IsNullOrWhiteSpace(folder))
-                try { candidates.Add(Path.Combine(folder.Trim('"'), OperatingSystem.IsWindows() ? "python.exe" : "python3")); } catch (ArgumentException) { }
+
         var discoveryTime = Stopwatch.StartNew();
-        foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase).Take(12))
+        foreach (var candidate in candidates.Distinct(StringComparer.OrdinalIgnoreCase).Take(64))
         {
-            if (discoveryTime.Elapsed > TimeSpan.FromSeconds(3)) break;
+            if (discoveryTime.Elapsed > TimeSpan.FromSeconds(5)) break;
             if (IsUsablePython(candidate)) return candidate;
         }
         return null;
@@ -67,7 +110,7 @@ public static class PythonRunner
             process.Start();
             var output = DrainAsync(process.StandardOutput);
             var error = DrainAsync(process.StandardError);
-            if (!process.WaitForExit(1500)) { Kill(process); return false; }
+            if (!process.WaitForExit(2500)) { Kill(process); return false; }
             Task.WhenAll(output, error).WaitAsync(TimeSpan.FromSeconds(1)).GetAwaiter().GetResult();
             return process.ExitCode == 0;
         }
@@ -97,10 +140,16 @@ public static class PythonRunner
         if (Encoding.UTF8.GetByteCount(code) > 64 * 1024) return Fail("invalid", "代码超过 64 KiB，请缩短后再试。");
         var cases = exercise.Coding.Cases.Where(c => !examplesOnly || c.IsExample).ToList();
         if (cases.Count == 0) return Fail("invalid", "没有可运行的测试用例。");
-        pythonPath = string.IsNullOrWhiteSpace(pythonPath) ? DiscoverPython() : pythonPath;
-        if (pythonPath is null || !IsUsablePython(pythonPath))
-            return Fail("runtime_missing", "未找到 Python 3.8 或以上版本。请在练习页选择已安装的 python.exe；本次不会自动下载。");
-        var folder = Path.Combine(Path.GetTempPath(), "EntLimit-run-" + Guid.NewGuid().ToString("N"));
+        var configuredPython = pythonPath;
+        pythonPath = ResolvePython(configuredPython);
+        if (pythonPath is null)
+            return Fail("runtime_missing", string.IsNullOrWhiteSpace(configuredPython)
+                ? "未找到 Python 3.8 或以上版本。已检查 PATH、EntLimit 运行时目录和已注册的 Python；请安装 Python 3.8+，或在练习页选择 python.exe。"
+                : "选定的 Python 无法使用（路径不存在、版本低于 3.8 或不可执行）。请重新选择 python.exe。");
+        string folder;
+        try { folder = RunnerTemp.CreateDirectory("EntLimit-run-"); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        { return Fail("error", "无法创建本地运行目录，请检查数据目录或临时目录的写入权限。"); }
         Process? process = null;
         WindowsJob? job = null;
         try

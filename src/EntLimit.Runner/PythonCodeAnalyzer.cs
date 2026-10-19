@@ -24,10 +24,16 @@ public static class PythonCodeAnalyzer
         if (cancellationToken.IsCancellationRequested) return Result("cancelled", "分析已取消。");
         if (exercise.Coding is null || exercise.Kind != "code") return Result("invalid", "这道题没有可分析的目标函数。");
         if (Encoding.UTF8.GetByteCount(code) > 64 * 1024) return Result("invalid", "代码超过 64 KiB，请缩短后分析。");
-        pythonPath = string.IsNullOrWhiteSpace(pythonPath) ? PythonRunner.DiscoverPython() : pythonPath;
-        if (pythonPath is null || !File.Exists(pythonPath) || pythonPath.Contains("WindowsApps", StringComparison.OrdinalIgnoreCase))
-            return Result("runtime_missing", "没有可用 Python，以下仅为题目通用教程，尚未分析当前代码。请选择已安装的 python.exe。");
-        var folder = Path.Combine(Path.GetTempPath(), "EntLimit-analysis-" + Guid.NewGuid().ToString("N"));
+        var configuredPython = pythonPath;
+        pythonPath = PythonRunner.ResolvePython(configuredPython);
+        if (pythonPath is null)
+            return Result("runtime_missing", string.IsNullOrWhiteSpace(configuredPython)
+                ? "没有可用 Python，以下仅为题目通用教程，尚未分析当前代码。请安装 Python 3.8+，或选择已安装的 python.exe。"
+                : "选定的 Python 无法使用，以下仅为题目通用教程，尚未分析当前代码。请重新选择可执行的 python.exe。");
+        string folder;
+        try { folder = RunnerTemp.CreateDirectory("EntLimit-analysis-"); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        { return Result("error", "无法创建本地分析目录，请检查数据目录或临时目录的写入权限。以下仅为通用教程。"); }
         Process? process = null; WindowsJob? job = null;
         try
         {
