@@ -1,0 +1,314 @@
+{
+  "schemaVersion": 1,
+  "packId": "python-practice-20-part-5",
+  "name": "Python循序练习20题 · 第5组",
+  "version": "1.0",
+  "description": "AI辅助原创Python练习；参考实现与备用解法经本地用例和随机对照检查，讲解仍可继续校订。",
+  "author": "EntLimit",
+  "topics": [
+    {
+      "id": "python",
+      "name": "编程 · Python",
+      "description": "Python 编程练习"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "py20-integer-ranges-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "把零散编号压缩成区间",
+      "scenario": "integer_ranges(nums)：整数列表顺序任意，允许重复、负数。去重后升序压缩成最大的连续闭区间，返回[[start,end],...]，单个数字也用[start,start]。空输入返回[]，不修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[5,1,2,4,3,9,9]]\n示例返回值：[[1,5],[9,9]]",
+      "takeaway": "排序去重后一次线性扫描，用当前区间起点与上一个数是否相差1来判断扩展还是收尾。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 6,
+      "parts": [],
+      "coding": {
+        "functionName": "integer_ranges",
+        "parameterTypes": [
+          "list[int]"
+        ],
+        "returnType": "list[list[int]]",
+        "starterCode": "def integer_ranges(nums):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def integer_ranges(nums):\n    ordered = sorted(set(nums))\n    result = []\n    for value in ordered:\n        if result and value == result[-1][1] + 1:\n            result[-1][1] = value\n        else:\n            result.append([value, value])\n    return result\n",
+        "solutionExplanation": "先用set去重，再sorted升序，得到不重复且有序的序列。随后遍历该序列：若结果列表非空且当前值恰好等于上一个区间终点加1，就说明仍连续，把上一个区间的终点就地更新为当前值（列表可变，直接改result[-1][1]即可）；否则开启新区间[value,value]。空输入时循环不执行，自然返回[]。整体不修改传入的nums。关键Python用法：sorted(set(nums))、列表元素就地赋值、result[-1]。",
+        "complexity": "令n为输入长度、u为不同整数数。集合构建平均O(n)，排序O(u log u)，扫描O(u)，因此平均总时间O(n+u log u)；额外空间O(u)。集合部分依赖哈希平均性能。",
+        "alternativeCode": "from itertools import groupby\n\ndef integer_ranges(nums):\n    ordered = sorted(set(nums))\n    result = []\n    for _, group in groupby(enumerate(ordered), lambda pair: pair[1] - pair[0]):\n        values = [value for _, value in group]\n        result.append([values[0], values[-1]])\n    return result\n",
+        "alternativeExplanation": "利用itertools.groupby：连续整数的值与下标之差保持不变，可用该差值作为分组键。每组的首尾即区间端点。写法更函数式，但需要记住“值减下标”这个技巧，可读性略低于参考解。整体复杂度与参考解一致。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[5,1,2,4,3,9,9]]",
+            "expectedJson": "[[1,5],[9,9]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[8]]",
+            "expectedJson": "[[8,8]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[1,1,2,4]]",
+            "expectedJson": "[[1,2],[4,4]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[-3,-2,0,1,2]]",
+            "expectedJson": "[[-3,-2],[0,2]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[10,0,5]]",
+            "expectedJson": "[[0,0],[5,5],[10,10]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先想一想：去重和排序哪一步必须先做？其实set与sorted可以串起来一步完成。",
+          "怎样判断两个数是否属于同一段？比较当前数与上一个区间的终点是否相差恰好1。",
+          "结果列表里的区间本身是可变列表，扩展区间时可以直接改它的第二个元素，而不必弹出再压入。"
+        ]
+      }
+    },
+    {
+      "id": "py20-decode-repetitions-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "解码带嵌套的重复文本",
+      "scenario": "decode_repetitions(text)：合法编码由小写a-z字母和k[子串]组成，可嵌套，k为0..20的十进制数，无多余前导零。子串可为空，输入可为空，最大嵌套8层，最终输出<=10000字符。返回解码字符串。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[\"3[a2[c]]\"]\n示例返回值：\"accaccacc\"",
+      "takeaway": "用栈把“当前累积字符串”和“待重复次数”分开保存，遇到[入栈、遇到]出栈合并，即可处理任意嵌套。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 12,
+      "parts": [],
+      "coding": {
+        "functionName": "decode_repetitions",
+        "parameterTypes": [
+          "str"
+        ],
+        "returnType": "str",
+        "starterCode": "def decode_repetitions(text):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def decode_repetitions(text):\n    def parse(index, active):\n        parts = []\n        while index < len(text):\n            char = text[index]\n            if char.isdigit():\n                count = 0\n                while text[index].isdigit():\n                    count = count * 10 + int(text[index])\n                    index += 1\n                chunk, index = parse(index + 1, active and count > 0)\n                if active:\n                    parts.append(chunk * count)\n            elif char == ']':\n                return ''.join(parts), index + 1\n            else:\n                if active:\n                    parts.append(char)\n                index += 1\n        return ''.join(parts), index\n    return parse(0, True)[0]\n",
+        "solutionExplanation": "每个k[子串]是一个递归子问题，parse返回解码片段及下一次读取位置。用parts收集片段，最后join，避免每结束一段都复制累计前缀。active=False仍扫描语法却不构造输出，因此0[很长的嵌套]不会白白展开大量最终丢弃的字符。对比显式栈可以看见递归调用栈保存了哪些上下文。",
+        "complexity": "令n为编码长度、L为最终输出长度、d为嵌套深度。跳过零次数分支的展开后，时间保守界为O(n+dL)，d<=8时可看作O(n+L)。空间保守界O(n+dL)，包含解析片段、返回字符串和栈。",
+        "alternativeCode": "def decode_repetitions(text):\n    frames = []\n    parts = []\n    active = True\n    number = 0\n    for char in text:\n        if char.isdigit():\n            number = number * 10 + int(char)\n        elif char == '[':\n            frames.append((parts, number, active))\n            active = active and number > 0\n            parts = []\n            number = 0\n        elif char == ']':\n            chunk = ''.join(parts) if active else ''\n            parts, repeat, active = frames.pop()\n            if active:\n                parts.append(chunk * repeat)\n        elif active:\n            parts.append(char)\n    return ''.join(parts)\n",
+        "alternativeExplanation": "显式栈保存父层片段、重复次数和是否需要输出。进入括号时建立新片段列表，离开时把完成的片段追加到父层，避免prev+current反复复制前缀。外层次数为0时只解析结构、不展开子串。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[\"3[a2[c]]\"]",
+            "expectedJson": "\"accaccacc\"",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[\"\"]",
+            "expectedJson": "\"\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[\"2[ab]x3[c]\"]",
+            "expectedJson": "\"ababxccc\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[\"10[a]\"]",
+            "expectedJson": "\"aaaaaaaaaa\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[\"0[abc]z\"]",
+            "expectedJson": "\"z\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[\"3[]2[a]\"]",
+            "expectedJson": "\"aa\"",
+            "isExample": false
+          },
+          {
+            "name": "零次数不展开巨大子表达式",
+            "argumentsJson": "[\"0[20[20[20[20[20[20[20[a]]]]]]]]\"]",
+            "expectedJson": "\"\"",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先处理最简单的单层情况：读数字、遇到[、读字母、遇到]，想一想这时候你需要临时保存什么。",
+          "遇到]时既要还原被打断的外层内容，也要知道该重复几遍，所以栈里最好同时存“外层已解出的字符串”和“倍数”。",
+          "倍数可能是两位数（如10），需要像读整数一样逐位累加，而不能只看单个字符。"
+        ]
+      }
+    },
+    {
+      "id": "py20-lru-gets-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "模拟最近最少使用缓存",
+      "scenario": "lru_gets(capacity, operations)：capacity为1..10整数。操作为[\"put\",字符串key,整数value]或[\"get\",字符串key]。返回每次get的结果列表，未命中返回-1；get命中和put都会使key最近使用，容量超出淘汰最久未使用key，更新已有key不占新位置。不修改操作输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[2,[[\"put\",\"a\",1],[\"put\",\"b\",2],[\"get\",\"a\"],[\"put\",\"c\",3],[\"get\",\"b\"],[\"get\",\"c\"]]]\n示例返回值：[1,-1,3]",
+      "takeaway": "OrderedDict天生按插入顺序维护键，move_to_end标记最近使用、popitem(last=False)弹出最久未使用。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 10,
+      "parts": [],
+      "coding": {
+        "functionName": "lru_gets",
+        "parameterTypes": [
+          "int",
+          "list[list]"
+        ],
+        "returnType": "list[int]",
+        "starterCode": "def lru_gets(capacity, operations):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "from collections import OrderedDict\n\ndef lru_gets(capacity, operations):\n    cache = OrderedDict()\n    results = []\n    for op in operations:\n        if op[0] == 'put':\n            key, value = op[1], op[2]\n            if key in cache:\n                cache[key] = value\n                cache.move_to_end(key)\n            else:\n                cache[key] = value\n                if len(cache) > capacity:\n                    cache.popitem(last=False)\n        else:\n            key = op[1]\n            if key in cache:\n                cache.move_to_end(key)\n                results.append(cache[key])\n            else:\n                results.append(-1)\n    return results\n",
+        "solutionExplanation": "用OrderedDict保存键到值的映射，它的迭代顺序即“从最久未使用到最近使用”。put已有key：更新值并move_to_end(key)置于末尾；put新key：先插入到末尾，若长度超过capacity就popitem(last=False)弹出头部（最久未使用）。get命中：move_to_end(key)后取value加入结果；未命中直接追加-1。注意先插入再判断长度，这样新插入的key不会被误删。整个过程只读取operations，不修改它。",
+        "complexity": "设m为操作数、c为容量、g为get次数。忽略字符串键哈希长度成本时，OrderedDict查询、移动和淘汰平均每次O(1)，总平均O(m)。缓存额外空间O(c)，返回结果还需O(g)。",
+        "alternativeCode": "def lru_gets(capacity, operations):\n    cache = {}\n    order = []\n\n    def touch(key):\n        order.remove(key)\n        order.append(key)\n\n    results = []\n    for op in operations:\n        if op[0] == 'put':\n            key, value = op[1], op[2]\n            if key in cache:\n                cache[key] = value\n                touch(key)\n            else:\n                cache[key] = value\n                order.append(key)\n                if len(order) > capacity:\n                    old = order.pop(0)\n                    del cache[old]\n        else:\n            key = op[1]\n            if key in cache:\n                touch(key)\n                results.append(cache[key])\n            else:\n                results.append(-1)\n    return results\n",
+        "alternativeExplanation": "用普通字典加一个列表维护使用顺序：列表头部是最久未使用，访问后把key移到尾部。功能与参考解相同，但order.remove和pop(0)是O(c)，容量虽小可行，容量大时不如OrderedDict。这里展示“数据结构可以自己拼”的思路，并提醒OrderedDict的便利性。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[2,[[\"put\",\"a\",1],[\"put\",\"b\",2],[\"get\",\"a\"],[\"put\",\"c\",3],[\"get\",\"b\"],[\"get\",\"c\"]]]",
+            "expectedJson": "[1,-1,3]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[1,[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[1,[[\"get\",\"x\"],[\"put\",\"x\",4],[\"put\",\"y\",7],[\"get\",\"x\"],[\"get\",\"y\"]]]",
+            "expectedJson": "[-1,-1,7]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[2,[[\"put\",\"a\",1],[\"put\",\"b\",2],[\"put\",\"a\",9],[\"put\",\"c\",3],[\"get\",\"b\"],[\"get\",\"a\"]]]",
+            "expectedJson": "[-1,9]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[1,[[\"put\",\"k\",-1],[\"get\",\"k\"]]]",
+            "expectedJson": "[-1]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[2,[[\"put\",\"a\",1],[\"put\",\"b\",2],[\"get\",\"z\"],[\"put\",\"c\",3],[\"get\",\"a\"]]]",
+            "expectedJson": "[-1,-1]",
+            "isExample": false
+          },
+          {
+            "name": "值为负一的命中仍更新最近使用",
+            "argumentsJson": "[2,[[\"put\",\"a\",-1],[\"put\",\"b\",2],[\"get\",\"a\"],[\"put\",\"c\",3],[\"get\",\"b\"]]]",
+            "expectedJson": "[-1,-1]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "什么数据结构能同时记住“谁存在”和“谁最久没用”？想想OrderedDict的迭代顺序含义。",
+          "用一次字典查找就能判断key是否存在；命中时别忘记把它标记成最近使用（放到顺序末尾）。",
+          "新key是“先插入再判断容量”，否则会误删刚插入的那个；更新的key只改值并调序，不触发淘汰。"
+        ]
+      }
+    },
+    {
+      "id": "py20-normalize-posix-path-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "只用字符串规范化绝对路径",
+      "scenario": "normalize_posix_path(path)：输入以/开头的POSIX绝对路径字符串，纯字符串处理，不访问文件系统。合并连续/，忽略.，..回到父目录但不越过根；其他名字（包括...）按字面保留。结果只有根目录可带末尾/，任意多个开头/都归一为一个/。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[\"/a/./b/../../c/\"]\n示例返回值：\"/c\"",
+      "takeaway": "把路径按/切成分段后用栈处理：普通名字入栈，..弹栈（栈空则停在根），最后用/拼接。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 7,
+      "parts": [],
+      "coding": {
+        "functionName": "normalize_posix_path",
+        "parameterTypes": [
+          "str"
+        ],
+        "returnType": "str",
+        "starterCode": "def normalize_posix_path(path):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def normalize_posix_path(path):\n    stack = []\n    for part in path.split('/'):\n        if part == '' or part == '.':\n            continue\n        if part == '..':\n            if stack:\n                stack.pop()\n        else:\n            stack.append(part)\n    return '/' + '/'.join(stack)\n",
+        "solutionExplanation": "用split('/')把路径切成片段，连续斜杠会产生空字符串片段，'./'会产生'.'片段，两者都直接跳过。普通名字（含'...'、中文等）压入栈；'..'则在栈非空时弹出一个（栈空表示已在根，忽略即可，从而不会越过根）。遍历结束后用'/'拼接栈中片段，并在最前面补一个'/'。由于输入保证以/开头，根目录时栈为空，拼接结果就是'/'，恰好符合要求；非根结果天然不带结尾斜杠。全程只读字符串，不碰文件系统。",
+        "complexity": "n为输入字符串长度。时间为O(n)：split遍历一遍，入栈弹栈每个片段最多一次，join总长度不超过n；空间O(n)，最坏情况栈中保存所有片段及拼接结果。平均与最坏情况同阶。",
+        "alternativeCode": "def normalize_posix_path(path):\n    result = []\n    for part in path.split('/'):\n        if part in ('', '.'):\n            continue\n        if part == '..' and result:\n            result.pop()\n        elif part != '..':\n            result.append(part)\n    return '/' + '/'.join(result)\n",
+        "alternativeExplanation": "与参考解等价，只是把跳过与弹栈的逻辑压缩成更少的判断：'..'且栈非空时弹栈，'..'且栈空时什么都不做，其余名字一律入栈。阅读时要留意elif条件里排除了'..'，避免把特殊片段当成普通名字。两者结果与复杂度一致。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[\"/a/./b/../../c/\"]",
+            "expectedJson": "\"/c\"",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[\"/\"]",
+            "expectedJson": "\"/\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[\"///a//b/\"]",
+            "expectedJson": "\"/a/b\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[\"/../../a\"]",
+            "expectedJson": "\"/a\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[\"/a/.../b/..\"]",
+            "expectedJson": "\"/a/...\"",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[\"/中文/目录/../文件\"]",
+            "expectedJson": "\"/中文/文件\"",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "按/切分后，空字符串与'.'都是可以整段丢掉的片段，先把它们统一处理掉。",
+          "处理'..'时，只有当栈里还有上一级时才弹出一个；栈空意味着已经在根目录，必须停在根。",
+          "最后拼接时别用字符串反复相加；把保留的片段收集起来一次性join，再在最前面补根斜杠。"
+        ]
+      }
+    }
+  ]
+}

@@ -34,6 +34,12 @@ void ImportAll(ContentPackStore store, ExerciseContentPack pack)
     var json = Json(pack); var preview = store.Preview(json);
     store.Import(json, preview.Rows.ToDictionary(r => r.ExerciseId, r => r.Status == "identical" ? "skip" : r.Status == "update" ? "update" : "add"), preview.CatalogRevision);
 }
+Add("Cold prompt export has a resolver without warming shared serializer options", () => WithStore((store, root) =>
+{
+    var prompt = store.ExportPrompt();
+    Check(prompt.Contains("JSON Schema:") && prompt.Contains("已有题目目录") && prompt.Contains("PackId"), "Missing generated schema/catalog");
+    Check(!Directory.Exists(root), "Export wrote user data");
+}));
 Add("Original package parses and external fields remain optional", () =>
 {
     var p = Pack(); var parsed = ContentPackValidation.Parse(Json(p));
@@ -181,6 +187,37 @@ Add("Published optional Java, English and Chinese samples validate and do not au
     }
     Check(s.Topics.Any(t => t.Id == "java") && s.Topics.Any(t => t.Id == "english") && s.Topics.Any(t => t.Id == "chinese"), "Examples did not create dynamic topics");
 }));
+Add("Python practice expansion validates twenty originals and imports idempotently", () => WithStore((store, root) =>
+{
+    var folder = Path.Combine(AppContext.BaseDirectory, "content", "packs", "python-practice-20");
+    var files = Directory.GetFiles(folder, "python-practice-*.json").Order().ToArray();
+    Check(files.Length == 5, "Need five distributable question packs");
+    var ids = new HashSet<string>();
+    foreach (var file in files)
+    {
+        var json = File.ReadAllText(file);
+        var pack = ContentPackValidation.Parse(json);
+        Check(pack.Exercises.Count == 4, "Each pack must have four exercises");
+        foreach (var exercise in pack.Exercises)
+        {
+            Check(ids.Add(exercise.Id) && exercise.Kind == "code" && exercise.LanguageId == "python", "Duplicate/non-Python question");
+            Check(exercise.Coding!.StarterCode.TrimEnd().EndsWith("pass"), "Starter must not reveal the solution");
+        }
+        ImportAll(store, pack);
+    }
+    Check(ids.Count == 20 && store.Packs.Count(p => p.PackId.StartsWith("python-practice-20-part-")) == 5, "Expansion is incomplete");
+    var revision = store.Revision;
+    foreach (var file in files)
+    {
+        var json = File.ReadAllText(file);
+        var preview = store.Preview(json);
+        Check(preview.Rows.All(r => r.Status == "identical"), "Repeated import is not identical");
+        store.Import(json, preview.Rows.ToDictionary(r => r.ExerciseId, _ => "skip"), preview.CatalogRevision);
+    }
+    Check(store.Revision == revision && new ContentPackStore(root).Exercises.Count(e => ids.Contains(e.Id)) == 20, "Repeat/restart changed question identity");
+    Check(!File.Exists(Path.Combine(root, "session.json")), "Question import wrote learning records");
+}));
+
 foreach (var (name, run) in tests) { run(); Console.WriteLine("PASS " + name); }
 Console.WriteLine($"{tests.Count} content checks passed.");
 

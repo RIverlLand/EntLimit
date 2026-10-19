@@ -1,0 +1,308 @@
+{
+  "schemaVersion": 1,
+  "packId": "python-practice-20-part-4",
+  "name": "Python循序练习20题 · 第4组",
+  "version": "1.0",
+  "description": "AI辅助原创Python练习；参考实现与备用解法经本地用例和随机对照检查，讲解仍可继续校订。",
+  "author": "EntLimit",
+  "topics": [
+    {
+      "id": "python",
+      "name": "编程 · Python",
+      "description": "Python 编程练习"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "py20-flatten-integers-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "展开嵌套的整数列表",
+      "scenario": "flatten_integers(items)：items为由整数或其他同结构列表组成的列表，最多40层，不含bool。按从左到右的遍历顺序返回扁平整数列表；空子列表忽略，不修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[[1,2],3,[4,[5]],[]]]\n示例返回值：[1,2,3,4,5]",
+      "takeaway": "递归处理嵌套结构时，把当前元素分成整数和列表两类，分别产出与合并。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "languageId": "python",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "flatten_integers",
+        "parameterTypes": [
+          "list"
+        ],
+        "returnType": "list",
+        "starterCode": "def flatten_integers(items):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def flatten_integers(items):\n    result = []\n    def visit(values):\n        for value in values:\n            if isinstance(value, list):\n                visit(value)\n            else:\n                result.append(value)\n    visit(items)\n    return result\n",
+        "solutionExplanation": "递归处理的对象始终是“整数或列表”：整数加入结果，列表交给visit继续遍历。用闭包让每一层共享同一个新结果列表，避免每层先返回一份扁平列表再extend带来的重复搬运。这里没有改动传入列表，只向自己创建的result追加。想练习不依赖调用栈的写法，可比较另一解中的显式栈和reversed。",
+        "complexity": "设整数和列表节点总数为N，最大嵌套深度为d。每个节点处理一次，时间O(N)；除输出外，递归栈O(d)，输出占O(整数数量)。",
+        "alternativeCode": "def flatten_integers(items):\n    stack = list(reversed(items))\n    result = []\n    while stack:\n        item = stack.pop()\n        if isinstance(item, list):\n            stack.extend(reversed(item))\n        else:\n            result.append(item)\n    return result",
+        "alternativeExplanation": "用显式栈模拟先序展开：先把 items 逆序压栈，保证左侧先出；弹出列表时再逆序压入其子元素，弹出整数时写入结果。这样避免递归调用栈，适合对嵌套深度更敏感的场景，时间复杂度仍是 O(n)。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[[1,2],3,[4,[5]],[]]]",
+            "expectedJson": "[1,2,3,4,5]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[1,2,3]]",
+            "expectedJson": "[1,2,3]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[[],[[],[]]]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[[-1],[0,[2]]]]",
+            "expectedJson": "[-1,0,2]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[[[[7]]]]]",
+            "expectedJson": "[7]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先写递归出口：空列表返回空列表。",
+          "遍历时用 isinstance(item, list) 判断是整数还是子列表。",
+          "整数 append，子列表递归后 extend 到当前结果。"
+        ]
+      }
+    },
+    {
+      "id": "py20-all-subsets-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "生成所有子集并稳定排序",
+      "scenario": "all_subsets(nums)：nums包含互不重复的整数，长度0..12。每个子集内部升序，所有子集按Python列表字典序升序（含空集）。不修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[2,1]]\n示例返回值：[[],[1],[1,2],[2]]",
+      "takeaway": "回溯法中先收集当前路径，再依次决策后续元素，可以自然得到字典序子集。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "languageId": "python",
+      "estimatedMinutes": 10,
+      "parts": [],
+      "coding": {
+        "functionName": "all_subsets",
+        "parameterTypes": [
+          "list"
+        ],
+        "returnType": "list",
+        "starterCode": "def all_subsets(nums):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def all_subsets(nums):\n    nums = sorted(nums)\n    result = []\n    path = []\n\n    def backtrack(start):\n        result.append(path[:])\n        for i in range(start, len(nums)):\n            path.append(nums[i])\n            backtrack(i + 1)\n            path.pop()\n\n    backtrack(0)\n    return result",
+        "solutionExplanation": "先对 nums 排序，保证每个子集内部升序，也使回溯按从小到大选择元素。backtrack(start) 先把当前 path 的副本加入答案，再尝试从 start 到末尾的每个元素：加入 path、递归下一层、再弹出。path[:] 复制当前路径，避免后续修改影响已保存的子集。先收集再递归的顺序正好产生空集、单元素、双元素等字典序结果。",
+        "complexity": "共有 2^n 个子集，每个子集复制长度最多 n，时间 O(n·2^n)；递归栈深度 n，path 与输出占用空间 O(n·2^n)，其中 n 为 nums 长度。",
+        "alternativeCode": "def all_subsets(nums):\n    nums = sorted(nums)\n    result = [[]]\n    for num in nums:\n        result.extend([subset + [num] for subset in result])\n    return sorted(result)\n",
+        "alternativeExplanation": "迭代法从空集开始，每加入一个数，就为已有子集创建一份带该数的新子集；最后必须sorted(result)满足题目的外层字典序。它需要额外的排序，参考解的有序回溯则在前序收集时自然得到字典序。两种解法都复制子集，不修改输入。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[2,1]]",
+            "expectedJson": "[[],[1],[1,2],[2]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[[]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[3]]",
+            "expectedJson": "[[],[3]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[-1,1,0]]",
+            "expectedJson": "[[],[-1],[-1,0],[-1,0,1],[-1,1],[0],[0,1],[1]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[4,2,7]]",
+            "expectedJson": "[[],[2],[2,4],[2,4,7],[2,7],[4],[4,7],[7]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[2,-2]]",
+            "expectedJson": "[[],[-2],[-2,2],[2]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先排序，让子集内部自然升序。",
+          "回溯函数进入时先把当前路径的副本加入答案。",
+          "每层只从 start 往后选元素，避免重复排列。"
+        ]
+      }
+    },
+    {
+      "id": "py20-binary-tree-depth-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "嵌套列表表示的二叉树深度",
+      "scenario": "binary_tree_depth(tree)：tree为None或[value,left,right]，value是整数，子节点同结构，输入合法且深度<=40。空树深度0，只有根节点为1。返回最大深度，不修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[1,[2,null,null],[3,null,null]]]\n示例返回值：2",
+      "takeaway": "树形递归深度等于左右子树深度的较大值加一，空节点返回0是自然出口。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "languageId": "python",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "binary_tree_depth",
+        "parameterTypes": [
+          "object"
+        ],
+        "returnType": "int",
+        "starterCode": "def binary_tree_depth(tree):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def binary_tree_depth(tree):\n    if tree is None:\n        return 0\n    left_depth = binary_tree_depth(tree[1])\n    right_depth = binary_tree_depth(tree[2])\n    return max(left_depth, right_depth) + 1",
+        "solutionExplanation": "空树返回0作为递归出口；非空节点把 tree[1] 和 tree[2] 分别递归求左右子树深度，取较大值加1就是当前节点深度。这里用 tree is None 判断空树，不会把 [0,null,null] 这类合法节点误判为空。每个节点只访问一次，写法直接对应树的定义。",
+        "complexity": "设节点数为 n，每个节点访问一次，时间 O(n)；递归调用栈深度等于树高 h，空间 O(h)；最坏为链状树 h=n。",
+        "alternativeCode": "from collections import deque\n\ndef binary_tree_depth(tree):\n    if tree is None:\n        return 0\n    queue = deque([tree])\n    depth = 0\n    while queue:\n        for _ in range(len(queue)):\n            node = queue.popleft()\n            for child in node[1:]:\n                if child is not None:\n                    queue.append(child)\n        depth += 1\n    return depth\n",
+        "alternativeExplanation": "按层遍历用队列保存下一层，每处理完当前层就增加深度。deque.popleft平均/摊还常数时间，避免list.pop(0)搬移后续元素。时间O(n)，队列空间O(w)，w为最大层宽；它和递归的O(h)调用栈是不同的空间取舍。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[1,[2,null,null],[3,null,null]]]",
+            "expectedJson": "2",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[null]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[0,null,null]]",
+            "expectedJson": "1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[1,[2,[3,null,null],null],null]]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[1,null,[2,null,[3,null,null]]]]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[1,[2,null,null],[3,[4,null,null],null]]]",
+            "expectedJson": "3",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "空树 depth 定义为0。",
+          "非空节点深度 = max(左子树深度, 右子树深度) + 1。",
+          "注意用 is None 判断空树，避免把 [0, ...] 误判为空。"
+        ]
+      }
+    },
+    {
+      "id": "py20-min-coins-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "用最少硬币凑出金额",
+      "scenario": "min_coins(coins, amount)：coins为正整数面额列表（可重复、可为空），每种无限枚；amount为0..5000整数。返回最少枚数，不能凑出返回-1；amount=0返回0。不修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[1,2,5],11]\n示例返回值：3",
+      "takeaway": "一维DP中把 dp[0] 设为0、其余设为无穷大，表示不可达状态，再从小到大转移。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "languageId": "python",
+      "estimatedMinutes": 12,
+      "parts": [],
+      "coding": {
+        "functionName": "min_coins",
+        "parameterTypes": [
+          "list",
+          "int"
+        ],
+        "returnType": "int",
+        "starterCode": "def min_coins(coins, amount):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def min_coins(coins, amount):\n    INF = amount + 1\n    dp = [INF] * (amount + 1)\n    dp[0] = 0\n    for coin in coins:\n        for value in range(coin, amount + 1):\n            if dp[value - coin] + 1 < dp[value]:\n                dp[value] = dp[value - coin] + 1\n    return -1 if dp[amount] == INF else dp[amount]",
+        "solutionExplanation": "dp[x] 表示凑出金额 x 所需最少硬币数。初始化 dp[0]=0，其余为 amount+1 作为“不可达”哨兵，因为最多用 amount 枚1元硬币。外层遍历每种硬币，内层从小到大遍历金额，保证每种硬币可重复使用。若 dp[value-coin]+1 更小就更新。最后若 dp[amount] 仍是哨兵则返回 -1。当 amount=0 时循环不执行，直接返回 dp[0]=0。",
+        "complexity": "设面额数量为 m，目标金额为 amount，两层循环总迭代 O(m·amount)，时间 O(m·amount)；dp 数组长度 amount+1，空间 O(amount)；最坏情况 amount=5000。",
+        "alternativeCode": "from collections import deque\n\ndef min_coins(coins, amount):\n    if amount == 0:\n        return 0\n    queue = deque([(0, 0)])\n    visited = {0}\n    values = set(coins)\n    while queue:\n        total, steps = queue.popleft()\n        for coin in values:\n            following = total + coin\n            if following == amount:\n                return steps + 1\n            if following < amount and following not in visited:\n                visited.add(following)\n                queue.append((following, steps + 1))\n    return -1\n",
+        "alternativeExplanation": "把金额看成图中的状态，每使用一枚硬币走一步；广度优先搜索第一次到达目标时，步数就是最少枚数。visited避免重复扩展。金额上限5000时直接递归可能超过Python调用栈，因此备用解也使用迭代，不能只靠缓存消除栈深限制。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[1,2,5],11]",
+            "expectedJson": "3",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[2],3]",
+            "expectedJson": "-1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[],0]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[],7]",
+            "expectedJson": "-1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[2,2,3],7]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[4,7],28]",
+            "expectedJson": "4",
+            "isExample": false
+          },
+          {
+            "name": "较大金额不依赖递归栈",
+            "argumentsJson": "[[1],5000]",
+            "expectedJson": "5000",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "dp[x] 表示凑出金额 x 的最少硬币数，dp[0]=0。",
+          "无法到达的状态可以设为 amount+1，最后判断是否还等于它。",
+          "外层遍历硬币、内层从小到大遍历金额，保证硬币可重复使用。"
+        ]
+      }
+    }
+  ]
+}

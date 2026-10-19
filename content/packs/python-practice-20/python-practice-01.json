@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "packId": "python-practice-20-part-1",
+  "name": "Python循序练习20题 · 第1组",
+  "version": "1.0",
+  "description": "AI辅助原创Python练习；参考实现与备用解法经本地用例和随机对照检查，讲解仍可继续校订。",
+  "author": "EntLimit",
+  "topics": [
+    {
+      "id": "python",
+      "name": "编程 · Python",
+      "description": "Python 编程练习"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "py20-top-k-words-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "热词榜：频次与字典序",
+      "scenario": "top_k_words(words, k)：words为字符串列表（可含空字符串、区分大小写），k为非负整数。返回出现次数最多的前k个不同字符串，先按次数降序，同次数按Python字符串字典序升序；k超过不同字符串数时返回全部。不要修改输入。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[\"tea\",\"code\",\"tea\",\"book\",\"code\",\"tea\"],2]\n示例返回值：[\"tea\",\"code\"]",
+      "takeaway": "用 Counter 统计频次，再用 (次数升序, 字符串升序) 的键取最小 k 个，恰好得到次数降序的结果。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "top_k_words",
+        "parameterTypes": [
+          "list[str]",
+          "int"
+        ],
+        "returnType": "list[str]",
+        "starterCode": "def top_k_words(words, k):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "from collections import Counter\nimport heapq\n\n\ndef top_k_words(words, k):\n    if k <= 0:\n        return []\n    counter = Counter(words)\n    # 键为 (次数, 字符串)：取最小 k 个等价于次数降序 + 字典序升序\n    smallest = heapq.nsmallest(k, counter.items(), key=lambda item: (-item[1], item[0]))\n    return [word for word, _ in smallest]",
+        "solutionExplanation": "先用 Counter 一次遍历统计每个不同字符串的频次，时间复杂度 O(n)。排序思路是构造键 (次数, 字符串)，对这个键取最小 k 个：次数越小越靠前，所以需要把要保留的高频词排前面。用 heapq.nsmallest 而非全排序，避免在词表很大时做完整 O(m log m) 排序，只维护 k 个元素。heapq.nsmallest 对比较元素是元组，内部用 < 比较，因此字符串部分按字典序；nsmallest 的结果本身按键升序返回，次数最小的在最前，与题目要求的次数降序相反，所以应构造 (次数, 字符串) 后仍取最小——实际上次数小的会被选为最小，返回顺序会从低频到高频，因此需把次数的符号取反或改为取最大的 k 个。更直接的写法是用 sorted(counter.items(), key=lambda item: (-item[1], item[0]))[:k]。为教学清晰，这里采用 nsmallest 并对次数取负：键为 (-次数, 字符串)，取最小 k 个，返回顺序即次数降序、同次数字典序升序。k 超过不同词数时 nsmallest 自动返回全部。",
+        "complexity": "令n为词数、u为不同词数，忽略字符串哈希/比较长度成本：Counter平均O(n)，取前k项约O(u log min(k,u))，k>=u时排序为O(u log u)；k=0直接返回。额外空间O(u+k)。",
+        "alternativeCode": "from collections import Counter\n\n\ndef top_k_words(words, k):\n    if k <= 0:\n        return []\n    counter = Counter(words)\n    ordered = sorted(counter.items(), key=lambda item: (-item[1], item[0]))\n    return [word for word, _ in ordered[:k]]",
+        "alternativeExplanation": "先 Counter 计数，再用排序键 (-次数, 字符串) 让高频优先、同频字典序升序，最后切片取前 k 个。代码最直白，适合 m 不大时使用；当 m 很大而 k 很小时，nsmallest 更省时间。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[\"tea\",\"code\",\"tea\",\"book\",\"code\",\"tea\"],2]",
+            "expectedJson": "[\"tea\",\"code\"]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[],3]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[\"b\",\"a\",\"b\",\"a\",\"c\"],2]",
+            "expectedJson": "[\"a\",\"b\"]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[\"A\",\"a\",\"A\",\"\"],9]",
+            "expectedJson": "[\"A\",\"\",\"a\"]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[\"x\"],0]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[\"\",\"b\",\"\",\"a\"],2]",
+            "expectedJson": "[\"\",\"a\"]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先用 Counter 或普通 dict 统计每个词的频次。",
+          "排序键写成 (-次数, 字符串)，这样次数相同时字典序小的排前面。",
+          "k 可能为 0 或超过不同词数，返回前先处理这两种情况，切片和 nsmallest 都能自动处理越界。"
+        ]
+      }
+    },
+    {
+      "id": "py20-group-anagrams-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "把字母异位词归到同一组",
+      "scenario": "group_anagrams(words)：words只包含小写a-z字符串，可为空、可重复。组按该类首次出现的先后排列，组内保持原输入顺序，重复词保留。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]]\n示例返回值：[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]",
+      "takeaway": "用固定长度的字符计数元组作哈希键，既避免排序开销，也保证相同字母组成的词落入同一桶。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "group_anagrams",
+        "parameterTypes": [
+          "list[str]"
+        ],
+        "returnType": "list[list[str]]",
+        "starterCode": "def group_anagrams(words):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def group_anagrams(words):\n    groups = {}\n    order = []\n    for word in words:\n        counts = [0] * 26\n        for ch in word:\n            counts[ord(ch) - ord('a')] += 1\n        key = tuple(counts)\n        if key not in groups:\n            groups[key] = []\n            order.append(key)\n        groups[key].append(word)\n    return [groups[key] for key in order]",
+        "solutionExplanation": "字母异位词的核心特征是各字母出现次数相同，因此用长度 26 的计数数组作为键即可。Python 中列表不可哈希，转成 tuple 后才能放进字典。遍历 words 时按原顺序处理：第一次见到某键就记录到 order 列表并创建空组，随后把当前词 append 进去。这样组间顺序等于各键首次出现的顺序，组内顺序等于原列表顺序，重复词也会保留在对应位置。比起对每个词 sorted(word) 得到键，计数法避免 O(L log L) 排序，在单词较长时更优；且只需一次遍历。",
+        "complexity": "n 为词数，L 为单词平均长度。时间复杂度 O(n·L)，每个字符处理一次；空间 O(n·L) 用于分组结果，计数数组每次 O(26) 可视为常数。",
+        "alternativeCode": "def group_anagrams(words):\n    groups = {}\n    order = []\n    for word in words:\n        key = ''.join(sorted(word))\n        if key not in groups:\n            groups[key] = []\n            order.append(key)\n        groups[key].append(word)\n    return [groups[key] for key in order]",
+        "alternativeExplanation": "用 sorted(word) 后拼接成字符串作为键，代码更短、可读性好。适合单词较短或对常数不敏感的场合；当单词很长时，逐字符计数的元组键更高效。两种实现返回顺序和分组规则完全一致。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]]",
+            "expectedJson": "[[\"eat\",\"tea\",\"ate\"],[\"tan\",\"nat\"],[\"bat\"]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[\"\",\"\"]]",
+            "expectedJson": "[[\"\",\"\"]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[\"ab\",\"ba\",\"ab\",\"a\"]]",
+            "expectedJson": "[[\"ab\",\"ba\",\"ab\"],[\"a\"]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[\"z\"]]",
+            "expectedJson": "[[\"z\"]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[\"abc\",\"bca\",\"cab\",\"aa\",\"a\"]]",
+            "expectedJson": "[[\"abc\",\"bca\",\"cab\"],[\"aa\"],[\"a\"]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "同组词的字母计数完全相同，可以用计数结果作为字典键。",
+          "列表不能当字典键，转成 tuple 或拼接成字符串即可。",
+          "组间顺序由首次出现决定，遍历时按顺序追加到 order 列表，最后再按 order 取各组即可。"
+        ]
+      }
+    },
+    {
+      "id": "py20-longest-consecutive-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "无序编号中最长的连续段",
+      "scenario": "longest_consecutive(nums)：整数列表可为空、含负数与重复。返回去重后最长连续整数段的长度，不要求原列表相邻；空列表返回0。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[100,4,200,1,3,2]]\n示例返回值：4",
+      "takeaway": "把数字放进哈希集合，仅从没有前驱的数字开始向后扩展，使每个数字最多被访问两次，达到平均 O(n)。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 10,
+      "parts": [],
+      "coding": {
+        "functionName": "longest_consecutive",
+        "parameterTypes": [
+          "list[int]"
+        ],
+        "returnType": "int",
+        "starterCode": "def longest_consecutive(nums):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def longest_consecutive(nums):\n    values = set(nums)\n    best = 0\n    for x in values:\n        # 只从连续段的起点开始扩展\n        if x - 1 not in values:\n            length = 1\n            while x + length in values:\n                length += 1\n            if length > best:\n                best = length\n    return best",
+        "solutionExplanation": "先用 set 去重，得到 O(1) 的成员判断。关键优化在于：只有当 x-1 不在集合中时，x 才可能是某段连续整数的起点；对非起点跳过，可以保证每个数字最多被当作起点检查一次、被向后扩展一次，总操作是线性的。从每个起点开始，用 while 循环不断检查 x+length 是否在集合里，直到断开，记录最大长度。相比排序后扫描，集合法在平均情况下是 O(n)，不受排序 O(n log n) 限制；最坏情况如所有数相同或全不连续时也只是每个数做一次常数判断。",
+        "complexity": "令n为输入长度。集合查询平均O(1)，只从连续段的最小值扩展，总平均O(n)，额外空间O(n)。哈希集合不保证任意碰撞情况下的最坏线性时间。",
+        "alternativeCode": "def longest_consecutive(nums):\n    if not nums:\n        return 0\n    ordered = sorted(set(nums))\n    best = 1\n    current = 1\n    for i in range(1, len(ordered)):\n        if ordered[i] == ordered[i - 1] + 1:\n            current += 1\n        else:\n            current = 1\n        if current > best:\n            best = current\n    return best",
+        "alternativeExplanation": "先去重再排序，然后扫描相邻差是否为 1 来累计段长。思路直观，适合 n 不大或需要有序结果时；时间复杂度 O(n log n)，比哈希集合解法多一个对数因子，但代码容易写对。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[100,4,200,1,3,2]]",
+            "expectedJson": "4",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[1,2,0,1]]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[-3,-2,-1,5]]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[7,7,7]]",
+            "expectedJson": "1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[9,1,2,3,7,8]]",
+            "expectedJson": "3",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先把所有数字放进 set 去重，并支持 O(1) 查找。",
+          "一个数字 x 是连续段起点当且仅当 x-1 不在集合里。",
+          "只从起点往后用 while 扩展并计数，记录最大长度；不要对每个数字都重新扩展。"
+        ]
+      }
+    },
+    {
+      "id": "py20-pair-sum-values-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "找出所有不重复的数值对",
+      "scenario": "pair_sum_values(nums, target)：整数列表可为空。必须使用两个不同下标，返回所有和为target的不重复数值对[a,b]，a<=b，结果按Python列表字典序升序。相同值组成的对必须至少出现两次。不要修改输入；返回值是列表的列表。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[1,1,2,3,4,5],6]\n示例返回值：[[1,5],[2,4]]",
+      "takeaway": "用集合记录已见值，兼顾 O(1) 查找与去重；处理重复值配对时要额外校验计数。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 10,
+      "parts": [],
+      "coding": {
+        "functionName": "pair_sum_values",
+        "parameterTypes": [
+          "list[int]",
+          "int"
+        ],
+        "returnType": "list[list[int]]",
+        "starterCode": "def pair_sum_values(nums, target):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "from collections import Counter\n\n\ndef pair_sum_values(nums, target):\n    counter = Counter(nums)\n    seen = set()\n    result = []\n    for x in nums:\n        complement = target - x\n        if complement not in counter:\n            continue\n        low, high = (x, complement) if x <= complement else (complement, x)\n        if low in seen:\n            continue\n        if low == high and counter[low] < 2:\n            continue\n        seen.add(low)\n        result.append([low, high])\n    result.sort()\n    return result",
+        "solutionExplanation": "遍历每个数 x，检查 target-x 是否在列表中。先用 Counter 记录各值出现次数，这样能判断所需补数是否存在、以及 low==high 时该值是否有至少两个副本。得到配对后把较小值放入 seen 去重，保证同一个对不会重复添加。遍历结束再对结果排序，满足字典序要求。因为去重的关键是小值，seen 只存小值即可。另一种写法是双指针：先排序，再左右夹逼并跳过重复，也是 O(n log n)，但需要在原列表副本上操作。",
+        "complexity": "n 为列表长度。Counter 与一次遍历均为 O(n)；最多得到 O(n) 个对，排序 O(n log n)。总时间 O(n log n)，空间 O(n)。",
+        "alternativeCode": "def pair_sum_values(nums, target):\n    ordered = sorted(nums)\n    left, right = 0, len(ordered) - 1\n    result = []\n    while left < right:\n        total = ordered[left] + ordered[right]\n        if total == target:\n            result.append([ordered[left], ordered[right]])\n            left += 1\n            right -= 1\n            while left < right and ordered[left] == ordered[left - 1]:\n                left += 1\n            while left < right and ordered[right] == ordered[right + 1]:\n                right -= 1\n        elif total < target:\n            left += 1\n        else:\n            right -= 1\n    return result",
+        "alternativeExplanation": "先排序，再用左右双指针：和小于目标左移，和大于目标右移，命中后跳过重复值。返回顺序天然是升序。注意原地排序会修改输入，所以这里用了 sorted(nums) 生成副本，保持输入不变。时间 O(n log n)，与 Counter 法同阶。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[1,1,2,3,4,5],6]",
+            "expectedJson": "[[1,5],[2,4]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[],0]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[3],6]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[3,3,3],6]",
+            "expectedJson": "[[3,3]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[-2,-1,0,1,2,2],0]",
+            "expectedJson": "[[-2,2],[-1,1]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[0,0,0],0]",
+            "expectedJson": "[[0,0]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "用 Counter 统计每个值的出现次数，方便判断补数是否存在。",
+          "为避免重复输出，可以把较小值放入 seen 集合，低值与高值相同（如 [3,3]）时要求该值计数至少为 2。",
+          "结果需要按字典序升序，最后统一 sort 一下最简单。"
+        ]
+      }
+    }
+  ]
+}

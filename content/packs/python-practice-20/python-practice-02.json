@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "packId": "python-practice-20-part-2",
+  "name": "Python循序练习20题 · 第2组",
+  "version": "1.0",
+  "description": "AI辅助原创Python练习；参考实现与备用解法经本地用例和随机对照检查，讲解仍可继续校订。",
+  "author": "EntLimit",
+  "topics": [
+    {
+      "id": "python",
+      "name": "编程 · Python",
+      "description": "Python 编程练习"
+    }
+  ],
+  "exercises": [
+    {
+      "id": "py20-longest-unique-span-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "最长不重复的文本片段",
+      "scenario": "longest_unique_span(text)：返回不含重复字符的最长连续子串长度，按Python Unicode字符计数，不按字节计数。空字符串返回0。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[\"abcabcbb\"]\n示例返回值：3",
+      "takeaway": "用滑动窗口维护一个无重复字符的连续区间，遇到重复时从左边收缩即可一次遍历完成。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "longest_unique_span",
+        "parameterTypes": [
+          "str"
+        ],
+        "returnType": "int",
+        "starterCode": "def longest_unique_span(text):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def longest_unique_span(text):\n    last = {}\n    left = 0\n    best = 0\n    for right, ch in enumerate(text):\n        if ch in last and last[ch] >= left:\n            left = last[ch] + 1\n        last[ch] = right\n        if right - left + 1 > best:\n            best = right - left + 1\n    return best\n",
+        "solutionExplanation": "维护窗口 [left, right]，用字典 last 记录每个字符最近一次出现的下标。右指针每次前进一个字符：如果该字符上次出现在 left 及之后，说明窗口内已重复，需要把 left 跳到上次位置的下一位，这样窗口重新无重复。之后更新 best 为当前窗口长度。注意这里不能直接对整个字符串去重后取长度，因为题目要求连续子串，去重会丢掉连续性约束，结果会偏大。Python 中用 enumerate 同时拿下标和字符，用字典做 O(1) 的最近位置查询，整体只需一次扫描。",
+        "complexity": "令n为字符数。在字典查询平均O(1)的假设下，总平均时间O(n)；每个字符仅更新一次位置。字典空间O(min(n,字符种类数))，不将哈希平均性能宣称为无条件最坏保证。",
+        "alternativeCode": "def longest_unique_span(text):\n    seen = set()\n    left = 0\n    best = 0\n    for right, ch in enumerate(text):\n        while ch in seen:\n            seen.remove(text[left])\n            left += 1\n        seen.add(ch)\n        if right - left + 1 > best:\n            best = right - left + 1\n    return best\n",
+        "alternativeExplanation": "用集合 seen 保存当前窗口内的字符，遇到重复时用 while 循环不断从左边移除字符，直到可以把新字符加入。语义与参考解相同，区别是收缩可能分多步进行，但均摊下来每个字符最多进出集合一次，整体仍是 O(n)。这种写法更直观地体现了窗口的“进一个、必要时出若干”的过程。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[\"abcabcbb\"]",
+            "expectedJson": "3",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[\"\"]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[\"bbbbb\"]",
+            "expectedJson": "1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[\"pwwkew\"]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[\"你好吗你好\"]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[\"a b!a\"]",
+            "expectedJson": "4",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先想清楚：窗口代表当前这段“无重复字符”的连续区间，左右边界如何移动？",
+          "如果新字符在窗口内出现过，左边界应该跳到哪里？可以直接跳到上次出现位置的下一位。",
+          "记录每个字符最近一次出现的下标，能让你 O(1) 判断是否落在当前窗口内。"
+        ]
+      }
+    },
+    {
+      "id": "py20-min-positive-window-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "凑够目标值的最短窗口",
+      "scenario": "min_positive_window(nums, target)：nums是严格正整数列表，target是正整数。返回元素和至少target的最短连续子数组长度，不存在返回0。空列表允许。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[2,3,1,2,4,3],7]\n示例返回值：2",
+      "takeaway": "当元素全为正数时，窗口和随右指针单调增，可以安全地用滑动窗口收缩左边界求最短窗口。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 6,
+      "parts": [],
+      "coding": {
+        "functionName": "min_positive_window",
+        "parameterTypes": [
+          "list[int]",
+          "int"
+        ],
+        "returnType": "int",
+        "starterCode": "def min_positive_window(nums, target):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def min_positive_window(nums, target):\n    left = 0\n    total = 0\n    best = float(\"inf\")\n    for right, value in enumerate(nums):\n        total += value\n        while total >= target:\n            length = right - left + 1\n            if length < best:\n                best = length\n            total -= nums[left]\n            left += 1\n    return 0 if best == float(\"inf\") else best\n",
+        "solutionExplanation": "用滑动窗口同时维护当前窗口 [left, right] 的元素和 total。右指针逐个把元素加入 total；只要 total 达到 target，就更新最短长度，然后把左指针指向的元素移出窗口并右移，尝试找到更短的可行窗口。因为所有元素都是正数，移出左端元素只会让 total 减小，窗口和不会因为左移而反弹，所以这个收缩过程是安全的。若遍历结束 best 仍为无穷大，说明任何连续子数组的和都达不到 target，返回 0。用 float(\"inf\") 作为初始最小值是 Python 里常见写法。",
+        "complexity": "时间复杂度 O(n)，每个元素最多被加入和移出窗口各一次；空间复杂度 O(1)，只用常数个变量。平均与最坏情况均为线性，前提是元素为正整数，这一前提保证了窗口和的单调性。",
+        "alternativeCode": "def min_positive_window(nums, target):\n    left = 0\n    total = 0\n    best = 0\n    for right, value in enumerate(nums):\n        total += value\n        while total >= target:\n            length = right - left + 1\n            if best == 0 or length < best:\n                best = length\n            total -= nums[left]\n            left += 1\n    return best\n",
+        "alternativeExplanation": "不引入无穷大，而是用 0 表示当前还没有找到可行窗口。发现窗口和达标时，如果 best 还是 0 或当前长度更小就更新。这样避免了浮点数比较，语义与参考解完全一致，适合不想用 float(\"inf\") 的读者。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[2,3,1,2,4,3],7]",
+            "expectedJson": "2",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[],1]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[1,1,1],4]",
+            "expectedJson": "0",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[8],7]",
+            "expectedJson": "1",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[1,2,3,4,5],11]",
+            "expectedJson": "3",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[1,1,1,1],2]",
+            "expectedJson": "2",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先想：如果窗口和已经达标，继续向右扩展只会让窗口变长，所以应该在哪里尝试收缩？",
+          "用 total 维护当前窗口和，达到 target 后不断移除最左边的元素，并更新最小长度。",
+          "想一想“元素全为正数”带来了什么性质，为什么左指针可以一直向右而不用回头。"
+        ]
+      }
+    },
+    {
+      "id": "py20-merge-intervals-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "合并重叠的时间区间",
+      "scenario": "merge_intervals(intervals)：输入为闭区间[start,end]列表，start<=end，顺序任意。重叠或共用端点时合并；[1,2]和[3,4]不合并。输出按起点升序。不修改输入及其内层列表，可为空。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[[1,3],[2,6],[8,10],[15,18]]]\n示例返回值：[[1,6],[8,10],[15,18]]",
+      "takeaway": "先按起点排序，再依次比较当前区间起点是否不大于已合并区间的终点，即可线性扫描合并。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 8,
+      "parts": [],
+      "coding": {
+        "functionName": "merge_intervals",
+        "parameterTypes": [
+          "list[list[int]]"
+        ],
+        "returnType": "list[list[int]]",
+        "starterCode": "def merge_intervals(intervals):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def merge_intervals(intervals):\n    ordered = sorted(intervals, key=lambda item: item[0])\n    merged = []\n    for start, end in ordered:\n        if merged and start <= merged[-1][1]:\n            if end > merged[-1][1]:\n                merged[-1][1] = end\n        else:\n            merged.append([start, end])\n    return merged\n",
+        "solutionExplanation": "先把区间按起点升序排序，这样可能重叠的区间一定相邻。用一个结果列表 merged 存放已合并的区间，遍历每个区间：如果它的起点不大于 merged 最后一个区间的终点，说明有重叠或相接，把终点更新为两者较大值即可；否则它和之前所有区间都不重叠，直接作为新区间加入。这里用 sorted 生成新列表，并在加入时新建 [start, end]，因此不会修改输入的列表或内层列表。比较用 <= 是为了把共享端点也算作重叠。",
+        "complexity": "时间复杂度 O(n log n)，主要花在排序上，n 为区间数量；合并扫描是 O(n)。空间复杂度 O(n)，用于存放排序副本和结果列表。平均与最坏情况都由排序决定。",
+        "alternativeCode": "def merge_intervals(intervals):\n    ordered = sorted((list(item) for item in intervals), key=lambda item: item[0])\n    merged = []\n    for start, end in ordered:\n        if merged and start <= merged[-1][1]:\n            merged[-1][1] = max(merged[-1][1], end)\n        else:\n            merged.append([start, end])\n    return merged\n",
+        "alternativeExplanation": "先在做排序副本时把每个内层序列复制成普通列表，再用 max 统一更新终点。这样即使输入是元组或其他序列也能正常工作，并且复制步骤进一步保证了不共享输入对象。逻辑与参考解一致，只是把“较大小取终点”的写法换成 max 表达。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[[1,3],[2,6],[8,10],[15,18]]]",
+            "expectedJson": "[[1,6],[8,10],[15,18]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[[1,4],[4,5]]]",
+            "expectedJson": "[[1,5]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[[3,4],[1,2]]]",
+            "expectedJson": "[[1,2],[3,4]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[[-3,-1],[-2,2],[2,2]]]",
+            "expectedJson": "[[-3,2]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[[1,10],[2,3],[1,10]]]",
+            "expectedJson": "[[1,10]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "区间顺序是任意的，先做什么预处理能让重叠关系只发生在相邻位置？",
+          "排序后，只需要关心结果列表最后一个区间的终点，思考什么时候应该合并、什么时候应该新开一个区间。",
+          "注意共享端点（如 4 和 4）也算重叠，比较时用 <= 而不是 <。"
+        ]
+      }
+    },
+    {
+      "id": "py20-rotate-square-v1",
+      "topicId": "python",
+      "mode": "standard",
+      "kind": "code",
+      "title": "生成顺时针旋转后的方阵",
+      "scenario": "rotate_square(matrix)：n*n整数方阵，n可为0。返回顺时针旋转90度的新矩阵；不得修改原矩阵或原行。矩阵满足方阵前提。\n\n请实现给定函数，不修改传入参数及其内层对象。\n示例位置参数：[[[1,2],[3,4]]]\n示例返回值：[[3,1],[4,2]]",
+      "takeaway": "顺时针旋转 90 度时，新矩阵第 i 行第 j 列来自原矩阵第 n-1-j 行第 i 列，按这个映射直接构造即可。",
+      "sourceUrl": "",
+      "sourceType": "original",
+      "languageId": "python",
+      "sourceLabel": "AI辅助原创；参考实现经本地测试，讲解仍待使用者复核；非转载课程题",
+      "estimatedMinutes": 7,
+      "parts": [],
+      "coding": {
+        "functionName": "rotate_square",
+        "parameterTypes": [
+          "list[list[int]]"
+        ],
+        "returnType": "list[list[int]]",
+        "starterCode": "def rotate_square(matrix):\n    # 在这里实现你的解答\n    pass\n",
+        "referenceCode": "def rotate_square(matrix):\n    n = len(matrix)\n    result = []\n    for i in range(n):\n        row = []\n        for j in range(n):\n            row.append(matrix[n - 1 - j][i])\n        result.append(row)\n    return result\n",
+        "solutionExplanation": "顺时针旋转 90 度后，新矩阵的列索引 j 取自原矩阵的行索引 i，而新矩阵的行索引 i 对应原矩阵的列索引，并且行号要倒过来。综合起来：新矩阵第 i 行第 j 列的元素等于原矩阵第 n-1-j 行第 i 列的元素。按这个映射双层循环逐个求值并 append 到新行，就得到全新的矩阵。由于全程只读取 matrix、只向新建的 result 写入，原矩阵和原行都不会被改动。n=0 时两层循环都不执行，自然返回空列表。",
+        "complexity": "时间复杂度 O(n^2)，需要访问原矩阵每个元素一次；空间复杂度 O(n^2)，需要建立一个同样大小的新矩阵。平均与最坏情况相同，取决于方阵规模。",
+        "alternativeCode": "def rotate_square(matrix):\n    if not matrix:\n        return []\n    return [list(row) for row in zip(*matrix[::-1])]\n",
+        "alternativeExplanation": "先把原矩阵的行顺序整体倒置，得到 matrix[::-1]，再用 zip(*...) 做转置，转置后每一列变成一个元组，最后用 list 把每行转成列表。这种写法用到了 Python 的星号解包和 zip，行数很少；matrix[::-1] 生成的是浅拷贝的新外层列表，zip 也只读取内容，因此不会修改原矩阵。结果语义与参考解完全一致。",
+        "cases": [
+          {
+            "name": "公开示例",
+            "argumentsJson": "[[[1,2],[3,4]]]",
+            "expectedJson": "[[3,1],[4,2]]",
+            "isExample": true
+          },
+          {
+            "name": "边界检查1",
+            "argumentsJson": "[[]]",
+            "expectedJson": "[]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查2",
+            "argumentsJson": "[[[5]]]",
+            "expectedJson": "[[5]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查3",
+            "argumentsJson": "[[[1,2,3],[4,5,6],[7,8,9]]]",
+            "expectedJson": "[[7,4,1],[8,5,2],[9,6,3]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查4",
+            "argumentsJson": "[[[-1,0],[0,-2]]]",
+            "expectedJson": "[[0,-1],[-2,0]]",
+            "isExample": false
+          },
+          {
+            "name": "边界检查5",
+            "argumentsJson": "[[[1,1],[1,1]]]",
+            "expectedJson": "[[1,1],[1,1]]",
+            "isExample": false
+          }
+        ],
+        "hints": [
+          "先在一张小方阵上标出旋转前后每个元素的坐标，观察行号和列号是怎么互换的。",
+          "新矩阵的第 i 行来自原矩阵哪一列？注意行号需要从下往上取。",
+          "如果不想手写双重循环，可以试着用 zip 做转置，但要想清楚先做哪一步、再转置哪一步。"
+        ]
+      }
+    }
+  ]
+}

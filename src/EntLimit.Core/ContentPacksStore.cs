@@ -181,7 +181,9 @@ public sealed class ContentPackStore
     }
     public string ExportPrompt()
     {
-        var schema = ContentPackValidation.JsonOptions.GetJsonSchemaAsNode(typeof(ExerciseContentPack)).ToJsonString();
+        var schemaOptions = new JsonSerializerOptions(ContentPackValidation.JsonOptions);
+        schemaOptions.MakeReadOnly(populateMissingResolver: true);
+        var schema = schemaOptions.GetJsonSchemaAsNode(typeof(ExerciseContentPack)).ToJsonString();
         var catalog = Exercises.Select(e => new { e.Id, e.Title, e.TopicId, e.Mode, e.Kind, e.ReviewOfId, e.LanguageId });
         return "请按下面 EntLimit v1 JSON Schema 创作一个可离线使用的小题库包，只返回 JSON，不要 Markdown。\n"
             + "每包不超过 48 KiB UTF-8、30 题；packId/topicId/exercise id 稳定，符合 [a-z0-9][a-z0-9._-]{0,79}。所有 schemaVersion 必须为 1。"
